@@ -3,30 +3,38 @@
 {% block title %}Analitica | Gestion Educativa{% endblock %}
 
 {% block content %}
-    <section class="card">
-        <h1>Analitica en tiempo real</h1>
-        <p>Los graficos se actualizan automaticamente cada 5 segundos.</p>
-        <div class="inline-form">
-            <a class="btn-link" href="{{ url_for('analytics.export_analytics', chart='subjects', format='png') }}">Exportar materias PNG</a>
-            <a class="btn-link" href="{{ url_for('analytics.export_analytics', chart='subjects', format='pdf') }}">Exportar materias PDF</a>
-            <a class="btn-link" href="{{ url_for('analytics.export_analytics', chart='students', format='png') }}">Exportar estudiantes PNG</a>
-            <a class="btn-link" href="{{ url_for('analytics.export_analytics', chart='students', format='pdf') }}">Exportar estudiantes PDF</a>
+    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h1 class="text-2xl font-bold">Analitica en tiempo real</h1>
+        <p class="mt-1 text-slate-600">Los graficos se actualizan automaticamente cada 5 segundos.</p>
+        <div class="mt-4 flex flex-wrap gap-2">
+            <a class="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500" href="{{ url_for('analytics.export_analytics', chart='subjects', format='png') }}">Exportar materias PNG</a>
+            <a class="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-500" href="{{ url_for('analytics.export_analytics', chart='subjects', format='pdf') }}">Exportar materias PDF</a>
+            <a class="rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700" href="{{ url_for('analytics.export_analytics', chart='students', format='png') }}">Exportar estudiantes PNG</a>
+            <a class="rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700" href="{{ url_for('analytics.export_analytics', chart='students', format='pdf') }}">Exportar estudiantes PDF</a>
         </div>
     </section>
 
-    <section class="card mt-16">
-        <h2>Promedio final por materia</h2>
-        <canvas id="subjectChart" height="120"></canvas>
-    </section>
+    <section class="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-2">
+        <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="mb-3 text-lg font-semibold">Promedio final por materia</h2>
+            <div class="h-72">
+                <canvas id="subjectChart"></canvas>
+            </div>
+        </article>
 
-    <section class="card mt-16">
-        <h2>Promedio por tipo de evaluacion</h2>
-        <canvas id="componentsChart" height="120"></canvas>
-    </section>
+        <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 class="mb-3 text-lg font-semibold">Promedio por tipo de evaluacion</h2>
+            <div class="h-72">
+                <canvas id="componentsChart"></canvas>
+            </div>
+        </article>
 
-    <section class="card mt-16">
-        <h2>Top 5 estudiantes por promedio</h2>
-        <canvas id="studentsChart" height="120"></canvas>
+        <article class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-2">
+            <h2 class="mb-3 text-lg font-semibold">Top 5 estudiantes por promedio</h2>
+            <div class="h-72">
+                <canvas id="studentsChart"></canvas>
+            </div>
+        </article>
     </section>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -38,7 +46,7 @@
         const subjectChart = new Chart(subjectCtx, {
             type: "bar",
             data: { labels: [], datasets: [{ label: "Promedio final", data: [] }] },
-            options: { responsive: true, scales: { y: { beginAtZero: true, max: 10 } } }
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } } }
         });
 
         const componentsChart = new Chart(componentsCtx, {
@@ -47,13 +55,13 @@
                 labels: ["Lab 1", "Lab 2", "Parcial"],
                 datasets: [{ label: "Promedio", data: [0, 0, 0] }]
             },
-            options: { responsive: true }
+            options: { responsive: true, maintainAspectRatio: false }
         });
 
         const studentsChart = new Chart(studentsCtx, {
             type: "line",
             data: { labels: [], datasets: [{ label: "Promedio final", data: [] }] },
-            options: { responsive: true, scales: { y: { beginAtZero: true, max: 10 } } }
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } } }
         });
 
         async function refreshCharts() {

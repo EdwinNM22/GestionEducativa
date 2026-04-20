@@ -3,16 +3,18 @@
 {% block title %}Login | Gestion Educativa{% endblock %}
 
 {% block content %}
-    <section class="card">
-        <h1>Iniciar sesion</h1>
-        <form method="post" class="form">
-            <label for="email">Correo</label>
-            <input id="email" name="email" type="email" required>
-
-            <label for="password">Contrasena</label>
-            <input id="password" name="password" type="password" required>
-
-            <button type="submit">Entrar</button>
+    <section class="mx-auto max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h1 class="mb-6 text-2xl font-bold">Iniciar sesion</h1>
+        <form method="post" class="space-y-4">
+            <div>
+                <label for="email" class="mb-1 block text-sm font-medium text-slate-700">Correo</label>
+                <input id="email" name="email" type="email" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+            </div>
+            <div>
+                <label for="password" class="mb-1 block text-sm font-medium text-slate-700">Contrasena</label>
+                <input id="password" name="password" type="password" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+            </div>
+            <button type="submit" class="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-500">Entrar</button>
         </form>
     </section>
 {% endblock %}

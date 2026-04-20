@@ -3,69 +3,71 @@
 {% block title %}Notas | Gestion Educativa{% endblock %}
 
 {% block content %}
-    <section class="card">
-        <h1>Notas por materia</h1>
-        <form method="post" class="form grades-grid">
-            <select name="student_id" required>
+    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h1 class="text-2xl font-bold">Notas por materia</h1>
+        <form method="post" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
+            <select name="student_id" required class="rounded-md border border-slate-300 px-3 py-2">
                 <option value="">Selecciona estudiante</option>
                 {% for student in students %}
                     <option value="{{ student.id }}">{{ student.full_name }}</option>
                 {% endfor %}
             </select>
-            <select name="subject_id" required>
+            <select name="subject_id" required class="rounded-md border border-slate-300 px-3 py-2">
                 <option value="">Selecciona materia</option>
                 {% for subject in subjects %}
                     <option value="{{ subject.id }}">{{ subject.name }}</option>
                 {% endfor %}
             </select>
-            <input name="lab1" type="number" step="0.01" min="0" max="10" placeholder="Lab 1 (25%)" required>
-            <input name="lab2" type="number" step="0.01" min="0" max="10" placeholder="Lab 2 (25%)" required>
-            <input name="partial" type="number" step="0.01" min="0" max="10" placeholder="Parcial (50%)" required>
-            <button type="submit">Guardar notas</button>
+            <input name="lab1" type="number" step="0.01" min="0" max="10" placeholder="Lab 1 (25%)" required class="rounded-md border border-slate-300 px-3 py-2">
+            <input name="lab2" type="number" step="0.01" min="0" max="10" placeholder="Lab 2 (25%)" required class="rounded-md border border-slate-300 px-3 py-2">
+            <input name="partial" type="number" step="0.01" min="0" max="10" placeholder="Parcial (50%)" required class="rounded-md border border-slate-300 px-3 py-2">
+            <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-500">Guardar notas</button>
         </form>
     </section>
 
-    <section class="card mt-16">
-        <h2>Registros</h2>
+    <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 class="text-xl font-semibold">Registros</h2>
         {% if enrollments %}
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Estudiante</th>
-                        <th>Materia</th>
-                        <th>Lab 1</th>
-                        <th>Lab 2</th>
-                        <th>Parcial</th>
-                        <th>Definitiva</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in enrollments %}
+            <div class="mt-4 overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-100 text-slate-700">
                         <tr>
-                            <td>{{ item.student.full_name }}</td>
-                            <td>{{ item.subject.name }}</td>
-                            <td>{{ item.lab1 }}</td>
-                            <td>{{ item.lab2 }}</td>
-                            <td>{{ item.partial }}</td>
-                            <td><strong>{{ item.final_grade }}</strong></td>
-                            <td>
-                                <form method="post" action="{{ url_for('education.edit_grade', enrollment_id=item.id) }}" class="inline-form">
-                                    <input name="lab1" type="number" step="0.01" min="0" max="10" value="{{ item.lab1 }}" required>
-                                    <input name="lab2" type="number" step="0.01" min="0" max="10" value="{{ item.lab2 }}" required>
-                                    <input name="partial" type="number" step="0.01" min="0" max="10" value="{{ item.partial }}" required>
-                                    <button type="submit">Guardar</button>
-                                </form>
-                                <form method="post" action="{{ url_for('education.delete_grade', enrollment_id=item.id) }}" class="inline-form">
-                                    <button type="submit" class="danger">Eliminar</button>
-                                </form>
-                            </td>
+                            <th class="px-3 py-2 text-left">Estudiante</th>
+                            <th class="px-3 py-2 text-left">Materia</th>
+                            <th class="px-3 py-2 text-left">Lab 1</th>
+                            <th class="px-3 py-2 text-left">Lab 2</th>
+                            <th class="px-3 py-2 text-left">Parcial</th>
+                            <th class="px-3 py-2 text-left">Definitiva</th>
+                            <th class="px-3 py-2 text-left">Acciones</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for item in enrollments %}
+                            <tr class="border-b border-slate-200">
+                                <td class="px-3 py-2">{{ item.student.full_name }}</td>
+                                <td class="px-3 py-2">{{ item.subject.name }}</td>
+                                <td class="px-3 py-2">{{ item.lab1 }}</td>
+                                <td class="px-3 py-2">{{ item.lab2 }}</td>
+                                <td class="px-3 py-2">{{ item.partial }}</td>
+                                <td class="px-3 py-2 font-semibold">{{ item.final_grade }}</td>
+                                <td class="px-3 py-2">
+                                    <form method="post" action="{{ url_for('education.edit_grade', enrollment_id=item.id) }}" class="mb-2 grid grid-cols-1 gap-2 md:grid-cols-4">
+                                        <input name="lab1" type="number" step="0.01" min="0" max="10" value="{{ item.lab1 }}" required class="rounded-md border border-slate-300 px-2 py-1.5">
+                                        <input name="lab2" type="number" step="0.01" min="0" max="10" value="{{ item.lab2 }}" required class="rounded-md border border-slate-300 px-2 py-1.5">
+                                        <input name="partial" type="number" step="0.01" min="0" max="10" value="{{ item.partial }}" required class="rounded-md border border-slate-300 px-2 py-1.5">
+                                        <button type="submit" class="rounded-md bg-slate-800 px-3 py-1.5 text-white hover:bg-slate-700">Guardar</button>
+                                    </form>
+                                    <form method="post" action="{{ url_for('education.delete_grade', enrollment_id=item.id) }}">
+                                        <button type="submit" class="rounded-md bg-rose-600 px-3 py-1.5 text-white hover:bg-rose-500">Eliminar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% else %}
-            <p>No hay notas registradas.</p>
+            <p class="mt-3 text-slate-500">No hay notas registradas.</p>
         {% endif %}
     </section>
 {% endblock %}
