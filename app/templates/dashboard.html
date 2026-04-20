@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Gestion Educativa{% endblock %}
+
+{% block content %}
+    <section class="card">
+        <h1>Dashboard</h1>
+        <p>Bienvenido, {{ user.username }}.</p>
+        <div class="stats-grid">
+            <div class="stat-item">
+                <strong>{{ stats.students }}</strong>
+                <span>Estudiantes</span>
+            </div>
+            <div class="stat-item">
+                <strong>{{ stats.teachers }}</strong>
+                <span>Profesores</span>
+            </div>
+            <div class="stat-item">
+                <strong>{{ stats.subjects }}</strong>
+                <span>Materias</span>
+            </div>
+            <div class="stat-item">
+                <strong>{{ stats.grades }}</strong>
+                <span>Registros de notas</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="card mt-16">
+        <h2>Ultimas notas registradas</h2>
+        {% if latest_grades %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Materia</th>
+                        <th>Lab 1</th>
+                        <th>Lab 2</th>
+                        <th>Parcial</th>
+                        <th>Definitiva</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in latest_grades %}
+                        <tr>
+                            <td>{{ row.student.full_name }}</td>
+                            <td>{{ row.subject.name }}</td>
+                            <td>{{ row.lab1 }}</td>
+                            <td>{{ row.lab2 }}</td>
+                            <td>{{ row.partial }}</td>
+                            <td><strong>{{ row.final_grade }}</strong></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay notas registradas aun.</p>
+        {% endif %}
+    </section>
+{% endblock %}

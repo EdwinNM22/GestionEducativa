@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Notas | Gestion Educativa{% endblock %}
+
+{% block content %}
+    <section class="card">
+        <h1>Notas por materia</h1>
+        <form method="post" class="form grades-grid">
+            <select name="student_id" required>
+                <option value="">Selecciona estudiante</option>
+                {% for student in students %}
+                    <option value="{{ student.id }}">{{ student.full_name }}</option>
+                {% endfor %}
+            </select>
+            <select name="subject_id" required>
+                <option value="">Selecciona materia</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                {% endfor %}
+            </select>
+            <input name="lab1" type="number" step="0.01" min="0" max="10" placeholder="Lab 1 (25%)" required>
+            <input name="lab2" type="number" step="0.01" min="0" max="10" placeholder="Lab 2 (25%)" required>
+            <input name="partial" type="number" step="0.01" min="0" max="10" placeholder="Parcial (50%)" required>
+            <button type="submit">Guardar notas</button>
+        </form>
+    </section>
+
+    <section class="card mt-16">
+        <h2>Registros</h2>
+        {% if enrollments %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Estudiante</th>
+                        <th>Materia</th>
+                        <th>Lab 1</th>
+                        <th>Lab 2</th>
+                        <th>Parcial</th>
+                        <th>Definitiva</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in enrollments %}
+                        <tr>
+                            <td>{{ item.student.full_name }}</td>
+                            <td>{{ item.subject.name }}</td>
+                            <td>{{ item.lab1 }}</td>
+                            <td>{{ item.lab2 }}</td>
+                            <td>{{ item.partial }}</td>
+                            <td><strong>{{ item.final_grade }}</strong></td>
+                            <td>
+                                <form method="post" action="{{ url_for('education.edit_grade', enrollment_id=item.id) }}" class="inline-form">
+                                    <input name="lab1" type="number" step="0.01" min="0" max="10" value="{{ item.lab1 }}" required>
+                                    <input name="lab2" type="number" step="0.01" min="0" max="10" value="{{ item.lab2 }}" required>
+                                    <input name="partial" type="number" step="0.01" min="0" max="10" value="{{ item.partial }}" required>
+                                    <button type="submit">Guardar</button>
+                                </form>
+                                <form method="post" action="{{ url_for('education.delete_grade', enrollment_id=item.id) }}" class="inline-form">
+                                    <button type="submit" class="danger">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay notas registradas.</p>
+        {% endif %}
+    </section>
+{% endblock %}

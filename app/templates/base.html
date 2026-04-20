@@ -7,7 +7,33 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
+    <header class="topbar">
+        <div class="container topbar-content">
+            <a href="{{ url_for('main.home') }}" class="brand">Gestion Educativa</a>
+            <nav>
+                {% if g.user %}
+                    <a href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                    <a href="{{ url_for('education.students') }}">Estudiantes</a>
+                    <a href="{{ url_for('education.teachers') }}">Profesores</a>
+                    <a href="{{ url_for('education.subjects') }}">Materias</a>
+                    <a href="{{ url_for('education.grades') }}">Notas</a>
+                    <a href="{{ url_for('analytics.analytics_dashboard') }}">Analitica</a>
+                    <a href="{{ url_for('auth.logout') }}">Salir</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}">Login</a>
+                    <a href="{{ url_for('auth.register') }}">Registro</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
     <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>

@@ -1,6 +1,10 @@
 Flask
 Flask-SQLAlchemy
 Flask-Migrate
+PyMySQL
+cryptography
+python-dotenv
 pandas
 seaborn
+matplotlib
 faker

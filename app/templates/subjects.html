@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Materias | Gestion Educativa{% endblock %}
+
+{% block content %}
+    <section class="card">
+        <h1>Materias</h1>
+        <form method="post" class="form three-cols">
+            <input name="name" type="text" placeholder="Nombre de la materia" required>
+            <select name="teacher_id">
+                <option value="">Sin profesor</option>
+                {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}">{{ teacher.full_name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Agregar materia</button>
+        </form>
+    </section>
+
+    <section class="card mt-16">
+        <h2>Listado</h2>
+        {% if subjects %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Materia</th>
+                        <th>Profesor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in subjects %}
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.teacher.full_name if item.teacher else "Sin asignar" }}</td>
+                            <td>
+                                <form method="post" action="{{ url_for('education.edit_subject', subject_id=item.id) }}" class="inline-form">
+                                    <input name="name" type="text" value="{{ item.name }}" required>
+                                    <select name="teacher_id">
+                                        <option value="">Sin profesor</option>
+                                        {% for teacher in teachers %}
+                                            <option value="{{ teacher.id }}" {% if item.teacher_id == teacher.id %}selected{% endif %}>
+                                                {{ teacher.full_name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit">Guardar</button>
+                                </form>
+                                <form method="post" action="{{ url_for('education.delete_subject', subject_id=item.id) }}" class="inline-form">
+                                    <button type="submit" class="danger">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay materias registradas.</p>
+        {% endif %}
+    </section>
+{% endblock %}

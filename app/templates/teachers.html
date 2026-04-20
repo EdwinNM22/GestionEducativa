@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Profesores | Gestion Educativa{% endblock %}
+
+{% block content %}
+    <section class="card">
+        <h1>Profesores</h1>
+        <form method="post" class="form two-cols">
+            <input name="full_name" type="text" placeholder="Nombre completo" required>
+            <input name="email" type="email" placeholder="Correo" required>
+            <button type="submit">Agregar profesor</button>
+        </form>
+    </section>
+
+    <section class="card mt-16">
+        <h2>Listado</h2>
+        {% if teachers %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in teachers %}
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td>{{ item.full_name }}</td>
+                            <td>{{ item.email }}</td>
+                            <td>
+                                <form method="post" action="{{ url_for('education.edit_teacher', teacher_id=item.id) }}" class="inline-form">
+                                    <input name="full_name" type="text" value="{{ item.full_name }}" required>
+                                    <input name="email" type="email" value="{{ item.email }}" required>
+                                    <button type="submit">Guardar</button>
+                                </form>
+                                <form method="post" action="{{ url_for('education.delete_teacher', teacher_id=item.id) }}" class="inline-form">
+                                    <button type="submit" class="danger">Eliminar</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No hay profesores registrados.</p>
+        {% endif %}
+    </section>
+{% endblock %}
