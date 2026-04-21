@@ -1,12 +1,14 @@
 from datetime import datetime
+import os
 import re
 
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, abort, current_app, flash, g, jsonify, redirect, render_template, request, url_for
+from werkzeug.utils import secure_filename
 
 from .auth import login_required, role_required
 from .extensions import db
 from .grading import parse_grade
-from .models import ROLE_ADMIN, Enrollment, Student, Subject, Teacher, User
+from .models import ROLE_ADMIN, ROLE_TEACHER, Enrollment, Student, Subject, Teacher, User
 
 education_bp = Blueprint("education", __name__)
 DEFAULT_PER_PAGE = 10
@@ -40,6 +42,24 @@ def _generate_subject_code(name: str, year: int | None = None) -> str:
         n += 1
         candidate = f"{base}-{n}"
     return candidate
+
+
+def _save_subject_image(file_storage, subject_name: str) -> str | None:
+    if not file_storage or not getattr(file_storage, "filename", ""):
+        return None
+    filename = secure_filename(file_storage.filename)
+    if not filename:
+        return None
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in {".png", ".jpg", ".jpeg", ".webp"}:
+        return None
+    stamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
+    slug = _slug3(subject_name)
+    final_name = f"{slug}_{stamp}{ext}"
+    folder = current_app.config["SUBJECT_IMAGE_UPLOAD_DIR"]
+    os.makedirs(folder, exist_ok=True)
+    file_storage.save(os.path.join(folder, final_name))
+    return f"uploads/subjects/{final_name}"
 
 
 @education_bp.route("/estudiantes", methods=["GET"])
@@ -340,6 +360,7 @@ def subjects():
         name = request.form.get("name", "").strip()
         section = request.form.get("section", "A").strip().upper()
         teacher_id = request.form.get("teacher_id", "").strip()
+        image_file = request.files.get("image")
 
         if not name:
             flash("El nombre de la materia es obligatorio.", "error")
@@ -355,7 +376,10 @@ def subjects():
 
         code = _generate_subject_code(name)
         teacher = Teacher.query.get(int(teacher_id)) if teacher_id else None
-        db.session.add(Subject(name=name, section=section, code=code, teacher=teacher))
+        image_path = _save_subject_image(image_file, name)
+        db.session.add(
+            Subject(name=name, section=section, code=code, teacher=teacher, image_path=image_path)
+        )
         db.session.commit()
         flash("Materia creada correctamente.", "success")
         return redirect(url_for("education.subjects"))
@@ -395,6 +419,7 @@ def subject_teachers(subject_id):
                 "name": subject.name,
                 "section": subject.section,
                 "code": subject.code,
+                "image_path": subject.image_path,
             },
             "teachers": teachers,
         }
@@ -421,6 +446,7 @@ def subject_students(subject_id):
                 "name": subject.name,
                 "section": subject.section,
                 "code": subject.code,
+                "image_path": subject.image_path,
             },
             "students": [
                 {"id": r.id, "full_name": r.full_name, "email": r.email}
@@ -462,6 +488,28 @@ def edit_subject(subject_id):
     return redirect(url_for("education.subjects"))
 
 
+@education_bp.route("/materias/<int:subject_id>/imagen", methods=["POST"])
+@login_required
+def update_subject_image(subject_id):
+    subject = Subject.query.get_or_404(subject_id)
+    if g.user.role == ROLE_TEACHER:
+        if g.user.teacher_id is None or subject.teacher_id != g.user.teacher_id:
+            abort(403)
+    elif g.user.role != ROLE_ADMIN:
+        abort(403)
+
+    image_file = request.files.get("image")
+    image_path = _save_subject_image(image_file, subject.name)
+    if not image_path:
+        flash("Imagen invalida. Usa PNG, JPG, JPEG o WEBP.", "error")
+        return redirect(request.referrer or url_for("education.subjects"))
+
+    subject.image_path = image_path
+    db.session.commit()
+    flash("Imagen de materia actualizada.", "success")
+    return redirect(request.referrer or url_for("education.subjects"))
+
+
 @education_bp.route("/materias/<int:subject_id>/eliminar", methods=["POST"])
 @login_required
 @role_required(ROLE_ADMIN)
@@ -488,21 +536,16 @@ def grades():
             flash("Completa todos los campos y usa notas entre 0 y 10.", "error")
             return redirect(url_for("education.grades"))
 
-        existing = Enrollment.query.filter_by(
+        enrollment = Enrollment.query.filter_by(
             student_id=int(student_id), subject_id=int(subject_id)
         ).first()
-        if existing:
-            flash("Ese estudiante ya tiene notas para esa materia.", "error")
+        if not enrollment:
+            flash("Ese alumno no esta asignado a esa materia.", "error")
             return redirect(url_for("education.grades"))
 
-        enrollment = Enrollment(
-            student_id=int(student_id),
-            subject_id=int(subject_id),
-            lab1=lab1,
-            lab2=lab2,
-            partial=partial,
-        )
-        db.session.add(enrollment)
+        enrollment.lab1 = lab1
+        enrollment.lab2 = lab2
+        enrollment.partial = partial
         db.session.commit()
         flash("Notas guardadas correctamente.", "success")
         return redirect(url_for("education.grades"))

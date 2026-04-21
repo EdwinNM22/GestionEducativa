@@ -7,37 +7,33 @@
         {% if not g.user.student_id %}
             <p class="mt-4 text-rose-700">Tu cuenta aun no esta vinculada a un estudiante. Pide al administrador que asocie tu usuario.</p>
         {% elif enrollments %}
-            <div class="mt-6 overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-slate-100 text-slate-700">
-                        <tr>
-                            <th class="px-3 py-2 text-left">Materia</th>
-                            <th class="px-3 py-2 text-left">Lab 1</th>
-                            <th class="px-3 py-2 text-left">Lab 2</th>
-                            <th class="px-3 py-2 text-left">Parcial</th>
-                            <th class="px-3 py-2 text-left">Definitiva</th>
-                            <th class="px-3 py-2 text-left">Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in enrollments %}
-                            <tr class="border-b border-slate-200">
-                                <td class="px-3 py-2 font-medium">{{ row.subject.name }}</td>
-                                <td class="px-3 py-2">{{ row.lab1 }}</td>
-                                <td class="px-3 py-2">{{ row.lab2 }}</td>
-                                <td class="px-3 py-2">{{ row.partial }}</td>
-                                <td class="px-3 py-2 font-semibold">{{ row.final_grade }}</td>
-                                <td class="px-3 py-2">
-                                    {% if row.final_grade >= passing_grade %}
-                                        <span class="rounded bg-emerald-100 px-2 py-0.5 text-emerald-800">Aprobado</span>
-                                    {% else %}
-                                        <span class="rounded bg-rose-100 px-2 py-0.5 text-rose-800">Reprobado</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {% for row in enrollments %}
+                    <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                        {% if row.subject.image_path %}
+                            <div class="h-28 bg-cover bg-center" style="background-image: linear-gradient(rgba(15,23,42,.35), rgba(15,23,42,.35)), url('{{ url_for('static', filename=row.subject.image_path) }}');"></div>
+                        {% else %}
+                            <div class="h-28 bg-gradient-to-br {% if loop.index0 % 3 == 0 %}from-slate-700 via-slate-600 to-slate-800{% elif loop.index0 % 3 == 1 %}from-indigo-700 via-blue-700 to-cyan-700{% else %}from-emerald-700 via-teal-700 to-slate-700{% endif %}"></div>
+                        {% endif %}
+                        <div class="space-y-2 p-4">
+                            <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ row.subject.code }} · Seccion {{ row.subject.section }}</p>
+                            <h3 class="text-lg font-semibold text-slate-900">{{ row.subject.name }}</h3>
+                            <div class="grid grid-cols-2 gap-2 text-sm text-slate-700">
+                                <p><span class="font-medium">Lab 1:</span> {{ row.lab1 }}</p>
+                                <p><span class="font-medium">Lab 2:</span> {{ row.lab2 }}</p>
+                                <p><span class="font-medium">Parcial:</span> {{ row.partial }}</p>
+                                <p><span class="font-medium">Nota final:</span> {{ row.final_grade }}</p>
+                            </div>
+                            <div>
+                                {% if row.final_grade >= passing_grade %}
+                                    <span class="rounded bg-emerald-100 px-2 py-0.5 text-emerald-800">Aprobado</span>
+                                {% else %}
+                                    <span class="rounded bg-rose-100 px-2 py-0.5 text-rose-800">Reprobado</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                {% endfor %}
             </div>
         {% else %}
             <p class="mt-6 text-slate-500">No tienes notas registradas aun.</p>

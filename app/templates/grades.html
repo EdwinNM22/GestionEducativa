@@ -6,17 +6,14 @@
     <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h1 class="text-2xl font-bold">Notas por materia</h1>
         <form method="post" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
-            <select name="student_id" required class="rounded-md border border-slate-300 px-3 py-2">
+            <select id="gradeStudentSelect" name="student_id" required class="rounded-md border border-slate-300 px-3 py-2">
                 <option value="">Selecciona estudiante</option>
                 {% for student in students %}
                     <option value="{{ student.id }}">{{ student.full_name }}</option>
                 {% endfor %}
             </select>
-            <select name="subject_id" required class="rounded-md border border-slate-300 px-3 py-2">
-                <option value="">Selecciona materia</option>
-                {% for subject in subjects %}
-                    <option value="{{ subject.id }}">{{ subject.name }}</option>
-                {% endfor %}
+            <select id="gradeSubjectSelect" name="subject_id" required class="rounded-md border border-slate-300 px-3 py-2">
+                <option value="">Primero selecciona estudiante</option>
             </select>
             <input name="lab1" type="number" step="0.01" min="0" max="10" placeholder="Lab 1 (25%)" required class="rounded-md border border-slate-300 px-3 py-2">
             <input name="lab2" type="number" step="0.01" min="0" max="10" placeholder="Lab 2 (25%)" required class="rounded-md border border-slate-300 px-3 py-2">
@@ -52,9 +49,18 @@
                                 <td class="px-3 py-2 font-semibold">{{ item.final_grade }}</td>
                                 <td class="px-3 py-2">
                                     <form method="post" action="{{ url_for('education.edit_grade', enrollment_id=item.id) }}" class="mb-2 grid grid-cols-1 gap-2 md:grid-cols-4">
-                                        <input name="lab1" type="number" step="0.01" min="0" max="10" value="{{ item.lab1 }}" required class="rounded-md border border-slate-300 px-2 py-1.5">
-                                        <input name="lab2" type="number" step="0.01" min="0" max="10" value="{{ item.lab2 }}" required class="rounded-md border border-slate-300 px-2 py-1.5">
-                                        <input name="partial" type="number" step="0.01" min="0" max="10" value="{{ item.partial }}" required class="rounded-md border border-slate-300 px-2 py-1.5">
+                                        <div>
+                                            <label class="mb-1 block text-[11px] font-medium text-slate-600">Lab 1</label>
+                                            <input name="lab1" type="number" step="0.01" min="0" max="10" value="{{ item.lab1 }}" required class="w-full rounded-md border border-slate-300 px-2 py-1.5">
+                                        </div>
+                                        <div>
+                                            <label class="mb-1 block text-[11px] font-medium text-slate-600">Lab 2</label>
+                                            <input name="lab2" type="number" step="0.01" min="0" max="10" value="{{ item.lab2 }}" required class="w-full rounded-md border border-slate-300 px-2 py-1.5">
+                                        </div>
+                                        <div>
+                                            <label class="mb-1 block text-[11px] font-medium text-slate-600">Parcial</label>
+                                            <input name="partial" type="number" step="0.01" min="0" max="10" value="{{ item.partial }}" required class="w-full rounded-md border border-slate-300 px-2 py-1.5">
+                                        </div>
                                         <button type="submit" class="rounded-md bg-slate-800 px-3 py-1.5 text-white hover:bg-slate-700">Guardar</button>
                                     </form>
                                     <form method="post" action="{{ url_for('education.delete_grade', enrollment_id=item.id) }}">
@@ -73,4 +79,54 @@
         {% set endpoint = 'education.grades' %}
         {% include '_pagination.html' %}
     </section>
+
+    <script>
+        const gradeStudentSelect = document.getElementById("gradeStudentSelect");
+        const gradeSubjectSelect = document.getElementById("gradeSubjectSelect");
+
+        function resetSubjects(placeholder) {
+            gradeSubjectSelect.innerHTML = "";
+            const opt = document.createElement("option");
+            opt.value = "";
+            opt.textContent = placeholder;
+            gradeSubjectSelect.appendChild(opt);
+        }
+
+        async function loadStudentSubjects() {
+            const studentId = gradeStudentSelect.value;
+            if (!studentId) {
+                resetSubjects("Primero selecciona estudiante");
+                return;
+            }
+
+            resetSubjects("Cargando materias...");
+            const url = "{{ url_for('education.student_subjects', student_id=0) }}".replace("/0", "/" + encodeURIComponent(studentId));
+            const response = await fetch(url);
+            if (!response.ok) {
+                resetSubjects("No se pudieron cargar materias");
+                return;
+            }
+            const payload = await response.json();
+            const subjects = payload.subjects || [];
+            if (!subjects.length) {
+                resetSubjects("Este alumno no tiene materias asignadas");
+                return;
+            }
+
+            gradeSubjectSelect.innerHTML = "";
+            const first = document.createElement("option");
+            first.value = "";
+            first.textContent = "Selecciona materia";
+            gradeSubjectSelect.appendChild(first);
+
+            subjects.forEach((subject) => {
+                const opt = document.createElement("option");
+                opt.value = String(subject.id);
+                opt.textContent = subject.name;
+                gradeSubjectSelect.appendChild(opt);
+            });
+        }
+
+        gradeStudentSelect.addEventListener("change", loadStudentSubjects);
+    </script>
 {% endblock %}

@@ -7,14 +7,28 @@
         {% if not g.user.teacher_id %}
             <p class="mt-4 text-rose-700">Tu cuenta no esta vinculada a un perfil de profesor.</p>
         {% elif subjects %}
-            <ul class="mt-6 divide-y divide-slate-200 rounded-lg border border-slate-200">
+            <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {% for s in subjects %}
-                    <li class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 hover:bg-slate-50">
-                        <span class="font-medium">{{ s.name }}</span>
-                        <a class="rounded-md bg-slate-800 px-3 py-1.5 text-sm text-white hover:bg-slate-700" href="{{ url_for('profesor.materia_detail', subject_id=s.id) }}">Ver alumnos y notas</a>
-                    </li>
+                    <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                        {% if s.image_path %}
+                            <div class="h-28 bg-cover bg-center" style="background-image: linear-gradient(rgba(15,23,42,.35), rgba(15,23,42,.35)), url('{{ url_for('static', filename=s.image_path) }}');"></div>
+                        {% else %}
+                            <div class="h-28 bg-gradient-to-br {% if loop.index0 % 3 == 0 %}from-slate-700 via-slate-600 to-slate-800{% elif loop.index0 % 3 == 1 %}from-indigo-700 via-blue-700 to-cyan-700{% else %}from-emerald-700 via-teal-700 to-slate-700{% endif %}"></div>
+                        {% endif %}
+                        <div class="space-y-2 p-4">
+                            <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ s.code }} · Seccion {{ s.section }}</p>
+                            <h3 class="text-lg font-semibold text-slate-900">{{ s.name }}</h3>
+                            <div class="flex flex-wrap gap-2">
+                                <a class="rounded-md bg-slate-800 px-3 py-1.5 text-sm text-white hover:bg-slate-700" href="{{ url_for('profesor.materia_detail', subject_id=s.id) }}">Ver alumnos y notas</a>
+                                <form method="post" enctype="multipart/form-data" action="{{ url_for('education.update_subject_image', subject_id=s.id) }}" class="flex items-center gap-2">
+                                    <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp" required class="w-40 rounded-md border border-slate-300 px-2 py-1 text-xs">
+                                    <button type="submit" class="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Guardar imagen</button>
+                                </form>
+                            </div>
+                        </div>
+                    </article>
                 {% endfor %}
-            </ul>
+            </div>
         {% else %}
             <p class="mt-6 text-slate-500">No tienes materias asignadas.</p>
         {% endif %}

@@ -62,6 +62,7 @@ class Subject(db.Model):
     name = db.Column(db.String(120), nullable=False)
     section = db.Column(db.String(1), nullable=False, default="A")
     code = db.Column(db.String(20), unique=True, nullable=False)
+    image_path = db.Column(db.String(255), nullable=True)
     teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
 

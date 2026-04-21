@@ -18,6 +18,10 @@ def create_app():
         "mysql+pymysql://root:password@localhost:3306/gestion-educativa-db",
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.config["SUBJECT_IMAGE_UPLOAD_DIR"] = os.path.join(
+        app.root_path, "static", "uploads", "subjects"
+    )
+    os.makedirs(app.config["SUBJECT_IMAGE_UPLOAD_DIR"], exist_ok=True)
 
     db.init_app(app)
     migrate.init_app(app, db)

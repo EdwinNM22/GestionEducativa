@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, g, render_template
+from flask import Blueprint, flash, g, render_template, request
 
 from .auth import login_required, role_required
 from .grading import PASSING_GRADE
