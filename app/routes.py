@@ -1,7 +1,7 @@
 from flask import Blueprint, g, redirect, render_template, url_for
 
-from .auth import login_required
-from .models import Enrollment, Student, Subject, Teacher
+from .auth import home_url_for_user, login_required, role_required
+from .models import ROLE_ADMIN, Enrollment, Student, Subject, Teacher
 
 main_bp = Blueprint("main", __name__)
 
@@ -10,11 +10,12 @@ main_bp = Blueprint("main", __name__)
 def home():
     if g.user is None:
         return redirect(url_for("auth.login"))
-    return redirect(url_for("main.dashboard"))
+    return redirect(home_url_for_user(g.user))
 
 
 @main_bp.route("/dashboard")
 @login_required
+@role_required(ROLE_ADMIN)
 def dashboard():
     stats = {
         "students": Student.query.count(),

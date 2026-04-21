@@ -26,6 +26,111 @@
         </div>
     </section>
 
+    <section class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <article class="overflow-visible rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="mb-3 flex items-start justify-between gap-3">
+                <h2 class="group relative min-w-0 flex-1 cursor-help text-lg font-semibold leading-snug text-slate-900">
+                    Promedio final por materia
+                    <span class="pointer-events-none absolute left-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-lg border border-slate-600 bg-slate-900 px-3 py-2.5 text-left text-xs font-normal leading-relaxed text-slate-100 shadow-lg opacity-0 transition duration-200 ease-out group-hover:opacity-100">
+                        Promedio de la nota final en cada materia (nota final = 25% Lab1 + 25% Lab2 + 50% Parcial). Permite comparar el desempeño medio entre asignaturas.
+                    </span>
+                </h2>
+                <button type="button" class="chart-export-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50" data-chart="subjects" title="Guardar esta grafica">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 4.5v12m0-12-3.75 3.75M12 4.5l3.75 3.75"/></svg>
+                    Guardar
+                </button>
+            </div>
+            <div class="h-72">
+                <canvas id="subjectChart"></canvas>
+            </div>
+        </article>
+
+        <article class="overflow-visible rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="mb-3 flex items-start justify-between gap-3">
+                <h2 class="group relative min-w-0 flex-1 cursor-help text-lg font-semibold leading-snug text-slate-900">
+                    Promedio por tipo de evaluacion
+                    <span class="pointer-events-none absolute left-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-lg border border-slate-600 bg-slate-900 px-3 py-2.5 text-left text-xs font-normal leading-relaxed text-slate-100 shadow-lg opacity-0 transition duration-200 ease-out group-hover:opacity-100">
+                        Promedio global de todas las calificaciones en Laboratorio 1, Laboratorio 2 y Parcial. Muestra en qué tipo de evaluación es más alto o más bajo el rendimiento.
+                    </span>
+                </h2>
+                <button type="button" class="chart-export-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50" data-chart="components" title="Guardar esta grafica">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 4.5v12m0-12-3.75 3.75M12 4.5l3.75 3.75"/></svg>
+                    Guardar
+                </button>
+            </div>
+            <div class="h-72">
+                <canvas id="componentsChart"></canvas>
+            </div>
+        </article>
+
+        <article class="overflow-visible rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="mb-3 flex items-start justify-between gap-3">
+                <h2 class="group relative min-w-0 flex-1 cursor-help text-lg font-semibold leading-snug text-slate-900">
+                    Top 5 estudiantes por promedio
+                    <span class="pointer-events-none absolute left-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-lg border border-slate-600 bg-slate-900 px-3 py-2.5 text-left text-xs font-normal leading-relaxed text-slate-100 shadow-lg opacity-0 transition duration-200 ease-out group-hover:opacity-100">
+                        Los cinco estudiantes con mayor promedio de nota final; el promedio se calcula entre todas las materias en las que tiene registro de notas.
+                    </span>
+                </h2>
+                <button type="button" class="chart-export-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50" data-chart="students" title="Guardar esta grafica">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 4.5v12m0-12-3.75 3.75M12 4.5l3.75 3.75"/></svg>
+                    Guardar
+                </button>
+            </div>
+            <div class="h-72">
+                <canvas id="studentsChart"></canvas>
+            </div>
+        </article>
+
+        <article class="overflow-visible rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="mb-3 flex items-start justify-between gap-3">
+                <h2 class="group relative min-w-0 flex-1 cursor-help text-lg font-semibold leading-snug text-slate-900">
+                    Ranking: alumnos aprobados por profesor
+                    <span class="pointer-events-none absolute left-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-lg border border-slate-600 bg-slate-900 px-3 py-2.5 text-left text-xs font-normal leading-relaxed text-slate-100 shadow-lg opacity-0 transition duration-200 ease-out group-hover:opacity-100">
+                        Por docente: cantidad de alumnos distintos con nota final mayor o igual a 7 en al menos una de sus materias. La tabla muestra el ranking completo; el grafico solo incluye profesores con al menos un alumno aprobado.
+                    </span>
+                </h2>
+                <button type="button" class="chart-export-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50" data-chart="teachers" title="Guardar esta grafica">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 4.5v12m0-12-3.75 3.75M12 4.5l3.75 3.75"/></svg>
+                    Guardar
+                </button>
+            </div>
+            <div class="h-72 w-full">
+                <canvas id="teacherPassingChart"></canvas>
+            </div>
+            <div id="teacherPassingRanking" class="mt-3"></div>
+        </article>
+
+        <article class="overflow-visible rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div class="mb-3 flex items-start justify-between gap-3">
+                <h2 class="group relative min-w-0 flex-1 cursor-help text-lg font-semibold leading-snug text-slate-900">
+                    Distribucion de notas finales
+                    <span class="pointer-events-none absolute left-0 top-full z-50 mt-2 w-[min(22rem,calc(100vw-2rem))] rounded-lg border border-slate-600 bg-slate-900 px-3 py-2.5 text-left text-xs font-normal leading-relaxed text-slate-100 shadow-lg opacity-0 transition duration-200 ease-out group-hover:opacity-100">
+                        Número de registros de nota en cada rango de nota final: 0-4, 4-7 y 7-10. Ayuda a ver la proporción de resultados bajos, intermedios y aprobados.
+                    </span>
+                </h2>
+                <button type="button" class="chart-export-btn inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50" data-chart="distribution" title="Guardar esta grafica">
+                    <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 4.5v12m0-12-3.75 3.75M12 4.5l3.75 3.75"/></svg>
+                    Guardar
+                </button>
+            </div>
+            <div class="h-72 w-full">
+                <canvas id="gradeDistributionChart"></canvas>
+            </div>
+        </article>
+    </section>
+
+    <div id="chartExportModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/50 p-4" aria-labelledby="chartExportModalTitle" role="dialog" aria-modal="true">
+        <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <h3 id="chartExportModalTitle" class="text-lg font-semibold text-slate-900">Guardar gráfica</h3>
+            <p class="mt-2 text-sm text-slate-600">¿En qué formato quieres descargar esta gráfica?</p>
+            <div class="mt-6 grid grid-cols-2 gap-3">
+                <button type="button" id="chartExportPng" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-100">PNG</button>
+                <button type="button" id="chartExportPdf" class="rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-500">PDF</button>
+            </div>
+            <button type="button" id="chartExportCancel" class="mt-4 w-full rounded-lg border border-slate-200 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50">Cancelar</button>
+        </div>
+    </div>
+
     <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
         <h2 class="text-xl font-semibold">Ultimas notas registradas</h2>
         {% if latest_grades %}
@@ -59,4 +164,150 @@
             <p class="mt-3 text-slate-500">No hay notas registradas aun.</p>
         {% endif %}
     </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const subjectCtx = document.getElementById("subjectChart");
+        const componentsCtx = document.getElementById("componentsChart");
+        const studentsCtx = document.getElementById("studentsChart");
+        const teacherPassingCtx = document.getElementById("teacherPassingChart");
+        const gradeDistributionCtx = document.getElementById("gradeDistributionChart");
+
+        const subjectChart = new Chart(subjectCtx, {
+            type: "bar",
+            data: { labels: [], datasets: [{ label: "Promedio final", data: [] }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } } }
+        });
+
+        const componentsChart = new Chart(componentsCtx, {
+            type: "doughnut",
+            data: {
+                labels: ["Lab 1", "Lab 2", "Parcial"],
+                datasets: [{ label: "Promedio", data: [0, 0, 0] }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        const studentsChart = new Chart(studentsCtx, {
+            type: "line",
+            data: { labels: [], datasets: [{ label: "Promedio final", data: [] }] },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 10 } } }
+        });
+
+        const teacherPassingChart = new Chart(teacherPassingCtx, {
+            type: "bar",
+            data: { labels: [], datasets: [{ label: "Estudiantes aprobados", data: [] }] },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+            },
+        });
+
+        const gradeDistributionChart = new Chart(gradeDistributionCtx, {
+            type: "bar",
+            data: {
+                labels: [],
+                datasets: [{ label: "Registros por rango", data: [], backgroundColor: ["rgba(239,68,68,0.65)", "rgba(234,179,8,0.65)", "rgba(34,197,94,0.65)"] }],
+            },
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+        });
+
+        const exportChartBaseUrl = "{{ url_for('analytics.export_analytics') }}";
+        let pendingExportChart = null;
+        const chartExportModal = document.getElementById("chartExportModal");
+        function openChartExportModal(chartKey) {
+            pendingExportChart = chartKey;
+            chartExportModal.classList.remove("hidden");
+            chartExportModal.classList.add("flex");
+        }
+        function closeChartExportModal() {
+            chartExportModal.classList.add("hidden");
+            chartExportModal.classList.remove("flex");
+            pendingExportChart = null;
+        }
+        document.querySelectorAll(".chart-export-btn").forEach((btn) => {
+            btn.addEventListener("click", () => openChartExportModal(btn.getAttribute("data-chart")));
+        });
+        document.getElementById("chartExportCancel").addEventListener("click", closeChartExportModal);
+        document.getElementById("chartExportPng").addEventListener("click", () => {
+            if (pendingExportChart) {
+                const url = exportChartBaseUrl + "?chart=" + encodeURIComponent(pendingExportChart) + "&format=png";
+                window.location.href = url;
+            }
+            closeChartExportModal();
+        });
+        document.getElementById("chartExportPdf").addEventListener("click", () => {
+            if (pendingExportChart) {
+                const url = exportChartBaseUrl + "?chart=" + encodeURIComponent(pendingExportChart) + "&format=pdf";
+                window.location.href = url;
+            }
+            closeChartExportModal();
+        });
+        chartExportModal.addEventListener("click", (e) => {
+            if (e.target === chartExportModal) closeChartExportModal();
+        });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && !chartExportModal.classList.contains("hidden")) closeChartExportModal();
+        });
+
+        function escHtml(s) {
+            const t = document.createElement("textarea");
+            t.textContent = s;
+            return t.innerHTML;
+        }
+
+        async function refreshCharts() {
+            const dataUrl = "{{ url_for('analytics.analytics_data') }}";
+            const response = await fetch(dataUrl);
+            if (!response.ok) return;
+            const payload = await response.json();
+
+            subjectChart.data.labels = payload.avg_by_subject.labels;
+            subjectChart.data.datasets[0].data = payload.avg_by_subject.values;
+            subjectChart.update();
+
+            componentsChart.data.labels = payload.avg_components.labels;
+            componentsChart.data.datasets[0].data = payload.avg_components.values;
+            componentsChart.update();
+
+            studentsChart.data.labels = payload.top_students.labels;
+            studentsChart.data.datasets[0].data = payload.top_students.values;
+            studentsChart.update();
+
+            const pt = payload.passing_by_teacher;
+            const nzLabels = [];
+            const nzValues = [];
+            pt.labels.forEach((name, i) => {
+                const v = pt.values[i];
+                if (v > 0) {
+                    nzLabels.push(name);
+                    nzValues.push(v);
+                }
+            });
+            teacherPassingChart.data.labels = nzLabels;
+            teacherPassingChart.data.datasets[0].data = nzValues;
+            teacherPassingChart.update();
+
+            const rankEl = document.getElementById("teacherPassingRanking");
+            if (pt.labels.length === 0) {
+                rankEl.innerHTML = "<p class=\"text-sm text-slate-500\">No hay profesores registrados.</p>";
+            } else {
+                let rows = "";
+                pt.labels.forEach((name, i) => {
+                    const v = pt.values[i];
+                    rows += "<tr class=\"border-b border-slate-200\"><td class=\"py-2 pr-4 text-slate-500\">" + (i + 1) + "</td><td class=\"py-2 pr-4 font-medium\">" + escHtml(String(name)) + "</td><td class=\"py-2 text-right tabular-nums\">" + v + "</td></tr>";
+                });
+                rankEl.innerHTML = "<div class=\"overflow-x-auto\"><table class=\"w-full min-w-[280px] text-sm\"><thead><tr class=\"border-b border-slate-200 text-left text-slate-600\"><th class=\"py-2 pr-4\">Puesto</th><th class=\"py-2 pr-4\">Profesor</th><th class=\"py-2 text-right\">Alumnos aprobados</th></tr></thead><tbody>" + rows + "</tbody></table></div>";
+            }
+
+            gradeDistributionChart.data.labels = payload.grade_distribution.labels;
+            gradeDistributionChart.data.datasets[0].data = payload.grade_distribution.values;
+            gradeDistributionChart.update();
+        }
+
+        refreshCharts();
+        setInterval(refreshCharts, 5000);
+    </script>
 {% endblock %}

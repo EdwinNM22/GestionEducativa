@@ -3,7 +3,7 @@ from functools import wraps
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
 from .extensions import db
-from .models import User
+from .models import ROLE_ADMIN, ROLE_STUDENT, ROLE_TEACHER, ROLES, User
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -18,33 +18,36 @@ def login_required(view):
     return wrapped_view
 
 
+def role_required(*allowed_roles):
+    def decorator(view):
+        @wraps(view)
+        def wrapped_view(*args, **kwargs):
+            if g.user is None:
+                return redirect(url_for("auth.login"))
+            if g.user.role not in allowed_roles:
+                flash("No tienes permiso para acceder a esa seccion.", "error")
+                return redirect(url_for("main.home"))
+            return view(*args, **kwargs)
+
+        return wrapped_view
+
+    return decorator
+
+
+def home_url_for_user(user: User):
+    if user.role == ROLE_ADMIN:
+        return url_for("main.dashboard")
+    if user.role == ROLE_TEACHER:
+        return url_for("profesor.panel")
+    if user.role == ROLE_STUDENT:
+        return url_for("alumno.panel")
+    return url_for("main.dashboard")
+
+
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == "POST":
-        username = request.form.get("username", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        password = request.form.get("password", "")
-
-        if not username or not email or not password:
-            flash("Todos los campos son obligatorios.", "error")
-            return render_template("register.html")
-
-        user_exists = User.query.filter(
-            (User.username == username) | (User.email == email)
-        ).first()
-        if user_exists:
-            flash("El usuario o correo ya existe.", "error")
-            return render_template("register.html")
-
-        user = User(username=username, email=email)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-
-        flash("Registro exitoso. Ahora puedes iniciar sesion.", "success")
-        return redirect(url_for("auth.login"))
-
-    return render_template("register.html")
+    flash("El alta de usuarios la gestiona un administrador.", "error")
+    return redirect(url_for("auth.login"))
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
@@ -60,7 +63,7 @@ def login():
 
         session.clear()
         session["user_id"] = user.id
-        return redirect(url_for("main.dashboard"))
+        return redirect(home_url_for_user(user))
 
     return render_template("login.html")
 

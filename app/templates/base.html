@@ -4,43 +4,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestion Educativa{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-slate-100 text-slate-900">
-    <header class="sticky top-0 z-40 border-b border-slate-200 bg-slate-900 text-white">
+<body class="flex min-h-screen flex-col bg-slate-100 text-slate-900">
+    <header class="sticky top-0 z-40 shrink-0 bg-slate-900 text-white">
         <div class="mx-auto w-full max-w-[1600px] px-4 py-3 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between gap-3">
                 <a href="{{ url_for('main.home') }}" class="text-xl font-semibold tracking-wide">Gestion Educativa</a>
                 {% if g.user %}
                     <a class="rounded-md bg-rose-600 px-3 py-1.5 text-sm hover:bg-rose-500" href="{{ url_for('auth.logout') }}">Salir</a>
                 {% else %}
-                    <div class="flex items-center gap-2">
-                        <a class="rounded-md bg-slate-800 px-3 py-1.5 text-sm hover:bg-slate-700" href="{{ url_for('auth.login') }}">Login</a>
-                        <a class="rounded-md bg-slate-800 px-3 py-1.5 text-sm hover:bg-slate-700" href="{{ url_for('auth.register') }}">Registro</a>
-                    </div>
+                    <a class="rounded-md bg-slate-800 px-3 py-1.5 text-sm hover:bg-slate-700" href="{{ url_for('auth.login') }}">Login</a>
                 {% endif %}
             </div>
         </div>
     </header>
-    <div class="mx-auto flex w-full max-w-[1600px] gap-0 px-0 py-0">
-        {% if g.user %}
-            <aside class="sticky top-[61px] h-[calc(100vh-61px)] w-64 shrink-0 self-start overflow-y-auto border-r border-slate-800 bg-slate-900 text-slate-100">
-                <div class="px-4 py-4">
-                    <p class="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Navegacion</p>
-                    <nav class="flex flex-col gap-1 text-sm">
-                        <a class="rounded-md px-3 py-2 hover:bg-slate-800" href="{{ url_for('main.dashboard') }}">Dashboard</a>
-                        <a class="rounded-md px-3 py-2 hover:bg-slate-800" href="{{ url_for('education.students') }}">Estudiantes</a>
-                        <a class="rounded-md px-3 py-2 hover:bg-slate-800" href="{{ url_for('education.teachers') }}">Profesores</a>
-                        <a class="rounded-md px-3 py-2 hover:bg-slate-800" href="{{ url_for('education.subjects') }}">Materias</a>
-                        <a class="rounded-md px-3 py-2 hover:bg-slate-800" href="{{ url_for('education.grades') }}">Notas</a>
-                        <a class="rounded-md px-3 py-2 hover:bg-slate-800" href="{{ url_for('analytics.analytics_dashboard') }}">Analitica</a>
+    {% if g.user %}
+    <div class="flex min-h-0 w-full flex-1 flex-row items-stretch">
+            <aside class="flex w-[11.5rem] shrink-0 flex-col overflow-y-auto border-r border-slate-800 bg-slate-900 text-slate-100 [-webkit-overflow-scrolling:touch]">
+                <div class="px-2.5 py-3">
+                    <p class="mb-2 px-1.5 text-[0.65rem] font-semibold uppercase tracking-wide text-slate-400">Navegacion</p>
+                    <nav class="flex flex-col gap-0.5 text-sm">
+                        {% if g.user.role == 'admin' %}
+                        <a class="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800" href="{{ url_for('main.dashboard') }}">
+                            <svg class="h-[1.125rem] w-[1.125rem] shrink-0 text-slate-400 group-hover:text-slate-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25zM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25z"/></svg>
+                            <span class="truncate">Dashboard</span>
+                        </a>
+                        <a class="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800" href="{{ url_for('admin.users_list') }}">
+                            <span class="truncate font-medium text-amber-300/90">Usuarios</span>
+                        </a>
+                        <a class="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800" href="{{ url_for('education.students') }}"><span class="truncate">Estudiantes</span></a>
+                        <a class="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800" href="{{ url_for('education.teachers') }}"><span class="truncate">Profesores</span></a>
+                        <a class="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800" href="{{ url_for('education.subjects') }}"><span class="truncate">Materias</span></a>
+                        <a class="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800" href="{{ url_for('education.grades') }}"><span class="truncate">Notas</span></a>
+                        {% elif g.user.role == 'teacher' %}
+                        <a class="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800" href="{{ url_for('profesor.panel') }}">
+                            <span class="truncate">Mis materias</span>
+                        </a>
+                        {% elif g.user.role == 'student' %}
+                        <a class="group flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-slate-800" href="{{ url_for('alumno.panel') }}">
+                            <span class="truncate">Mis notas</span>
+                        </a>
+                        {% endif %}
                     </nav>
                 </div>
             </aside>
-            <main class="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
-        {% else %}
-            <main class="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
-        {% endif %}
+            <main class="mx-auto min-h-0 min-w-0 w-full max-w-[1600px] flex-1 px-4 py-6 sm:px-6 lg:px-8">
+    {% else %}
+    <div class="mx-auto flex min-h-0 w-full max-w-[1600px] flex-1 px-4 sm:px-6 lg:px-8">
+            <main class="min-h-0 min-w-0 flex-1 py-6">
+    {% endif %}
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}

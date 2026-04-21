@@ -69,5 +69,8 @@
         {% else %}
             <p class="mt-3 text-slate-500">No hay notas registradas.</p>
         {% endif %}
+        {% set pagination = enrollments_pagination %}
+        {% set endpoint = 'education.grades' %}
+        {% include '_pagination.html' %}
     </section>
 {% endblock %}

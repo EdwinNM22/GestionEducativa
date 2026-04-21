@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Mi panel | Gestion Educativa{% endblock %}
+{% block content %}
+    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h1 class="text-2xl font-bold">Mis materias y notas</h1>
+        <p class="mt-1 text-slate-600">Hola, {{ g.user.username }}.</p>
+        {% if not g.user.student_id %}
+            <p class="mt-4 text-rose-700">Tu cuenta aun no esta vinculada a un estudiante. Pide al administrador que asocie tu usuario.</p>
+        {% elif enrollments %}
+            <div class="mt-6 overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-slate-100 text-slate-700">
+                        <tr>
+                            <th class="px-3 py-2 text-left">Materia</th>
+                            <th class="px-3 py-2 text-left">Lab 1</th>
+                            <th class="px-3 py-2 text-left">Lab 2</th>
+                            <th class="px-3 py-2 text-left">Parcial</th>
+                            <th class="px-3 py-2 text-left">Definitiva</th>
+                            <th class="px-3 py-2 text-left">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in enrollments %}
+                            <tr class="border-b border-slate-200">
+                                <td class="px-3 py-2 font-medium">{{ row.subject.name }}</td>
+                                <td class="px-3 py-2">{{ row.lab1 }}</td>
+                                <td class="px-3 py-2">{{ row.lab2 }}</td>
+                                <td class="px-3 py-2">{{ row.partial }}</td>
+                                <td class="px-3 py-2 font-semibold">{{ row.final_grade }}</td>
+                                <td class="px-3 py-2">
+                                    {% if row.final_grade >= passing_grade %}
+                                        <span class="rounded bg-emerald-100 px-2 py-0.5 text-emerald-800">Aprobado</span>
+                                    {% else %}
+                                        <span class="rounded bg-rose-100 px-2 py-0.5 text-rose-800">Reprobado</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="mt-6 text-slate-500">No tienes notas registradas aun.</p>
+        {% endif %}
+        {% if g.user.student_id %}
+            {% set pagination = enrollments_pagination %}
+            {% set endpoint = 'alumno.panel' %}
+            {% include '_pagination.html' %}
+        {% endif %}
+    </section>
+{% endblock %}

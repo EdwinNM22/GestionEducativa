@@ -1,47 +1,44 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
-from .auth import login_required
+from .auth import login_required, role_required
 from .extensions import db
-from .models import Enrollment, Student, Subject, Teacher
+from .grading import parse_grade
+from .models import ROLE_ADMIN, Enrollment, Student, Subject, Teacher, User
 
 education_bp = Blueprint("education", __name__)
+DEFAULT_PER_PAGE = 25
+MAX_PER_PAGE = 100
 
 
-def parse_grade(value):
-    try:
-        grade = float(value)
-    except (TypeError, ValueError):
-        return None
-    if 0 <= grade <= 10:
-        return grade
-    return None
+def _pagination_args():
+    page = request.args.get("page", default=1, type=int)
+    per_page = request.args.get("per_page", default=DEFAULT_PER_PAGE, type=int)
+    if page is None or page < 1:
+        page = 1
+    if per_page is None or per_page < 1:
+        per_page = DEFAULT_PER_PAGE
+    per_page = min(per_page, MAX_PER_PAGE)
+    return page, per_page
 
 
-@education_bp.route("/estudiantes", methods=["GET", "POST"])
+@education_bp.route("/estudiantes", methods=["GET"])
 @login_required
+@role_required(ROLE_ADMIN)
 def students():
-    if request.method == "POST":
-        full_name = request.form.get("full_name", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        if not full_name or not email:
-            flash("Nombre y correo son obligatorios.", "error")
-            return redirect(url_for("education.students"))
-
-        if Student.query.filter_by(email=email).first():
-            flash("Ya existe un estudiante con ese correo.", "error")
-            return redirect(url_for("education.students"))
-
-        db.session.add(Student(full_name=full_name, email=email))
-        db.session.commit()
-        flash("Estudiante creado correctamente.", "success")
-        return redirect(url_for("education.students"))
-
-    students_list = Student.query.order_by(Student.id.desc()).all()
-    return render_template("students.html", students=students_list)
+    page, per_page = _pagination_args()
+    students_pagination = Student.query.order_by(Student.id.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    return render_template(
+        "students.html",
+        students=students_pagination.items,
+        students_pagination=students_pagination,
+    )
 
 
 @education_bp.route("/estudiantes/<int:student_id>/editar", methods=["POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def edit_student(student_id):
     student = Student.query.get_or_404(student_id)
     full_name = request.form.get("full_name", "").strip()
@@ -64,7 +61,11 @@ def edit_student(student_id):
 
 @education_bp.route("/estudiantes/<int:student_id>/eliminar", methods=["POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def delete_student(student_id):
+    if User.query.filter_by(student_id=student_id).first():
+        flash("Este estudiante tiene una cuenta de usuario. Elimina o reasigna ese usuario primero.", "error")
+        return redirect(url_for("education.students"))
     student = Student.query.get_or_404(student_id)
     db.session.delete(student)
     db.session.commit()
@@ -74,6 +75,7 @@ def delete_student(student_id):
 
 @education_bp.route("/profesores", methods=["GET", "POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def teachers():
     if request.method == "POST":
         full_name = request.form.get("full_name", "").strip()
@@ -91,12 +93,20 @@ def teachers():
         flash("Profesor creado correctamente.", "success")
         return redirect(url_for("education.teachers"))
 
-    teachers_list = Teacher.query.order_by(Teacher.id.desc()).all()
-    return render_template("teachers.html", teachers=teachers_list)
+    page, per_page = _pagination_args()
+    teachers_pagination = Teacher.query.order_by(Teacher.id.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    return render_template(
+        "teachers.html",
+        teachers=teachers_pagination.items,
+        teachers_pagination=teachers_pagination,
+    )
 
 
 @education_bp.route("/profesores/<int:teacher_id>/editar", methods=["POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def edit_teacher(teacher_id):
     teacher = Teacher.query.get_or_404(teacher_id)
     full_name = request.form.get("full_name", "").strip()
@@ -119,7 +129,11 @@ def edit_teacher(teacher_id):
 
 @education_bp.route("/profesores/<int:teacher_id>/eliminar", methods=["POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def delete_teacher(teacher_id):
+    if User.query.filter_by(teacher_id=teacher_id).first():
+        flash("Este profesor tiene una cuenta de usuario. Elimina o reasigna ese usuario primero.", "error")
+        return redirect(url_for("education.teachers"))
     teacher = Teacher.query.get_or_404(teacher_id)
     for subject in teacher.subjects:
         subject.teacher_id = None
@@ -131,6 +145,7 @@ def delete_teacher(teacher_id):
 
 @education_bp.route("/materias", methods=["GET", "POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def subjects():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
@@ -150,15 +165,22 @@ def subjects():
         flash("Materia creada correctamente.", "success")
         return redirect(url_for("education.subjects"))
 
-    subjects_list = Subject.query.order_by(Subject.id.desc()).all()
+    page, per_page = _pagination_args()
+    subjects_pagination = Subject.query.order_by(Subject.id.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
     teachers_list = Teacher.query.order_by(Teacher.full_name.asc()).all()
     return render_template(
-        "subjects.html", subjects=subjects_list, teachers=teachers_list
+        "subjects.html",
+        subjects=subjects_pagination.items,
+        teachers=teachers_list,
+        subjects_pagination=subjects_pagination,
     )
 
 
 @education_bp.route("/materias/<int:subject_id>/editar", methods=["POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def edit_subject(subject_id):
     subject = Subject.query.get_or_404(subject_id)
     name = request.form.get("name", "").strip()
@@ -182,6 +204,7 @@ def edit_subject(subject_id):
 
 @education_bp.route("/materias/<int:subject_id>/eliminar", methods=["POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def delete_subject(subject_id):
     subject = Subject.query.get_or_404(subject_id)
     db.session.delete(subject)
@@ -192,6 +215,7 @@ def delete_subject(subject_id):
 
 @education_bp.route("/notas", methods=["GET", "POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def grades():
     if request.method == "POST":
         student_id = request.form.get("student_id", "").strip()
@@ -223,19 +247,24 @@ def grades():
         flash("Notas guardadas correctamente.", "success")
         return redirect(url_for("education.grades"))
 
-    enrollments = Enrollment.query.order_by(Enrollment.id.desc()).all()
+    page, per_page = _pagination_args()
+    enrollments_pagination = Enrollment.query.order_by(Enrollment.id.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
     students_list = Student.query.order_by(Student.full_name.asc()).all()
     subjects_list = Subject.query.order_by(Subject.name.asc()).all()
     return render_template(
         "grades.html",
-        enrollments=enrollments,
+        enrollments=enrollments_pagination.items,
         students=students_list,
         subjects=subjects_list,
+        enrollments_pagination=enrollments_pagination,
     )
 
 
 @education_bp.route("/notas/<int:enrollment_id>/editar", methods=["POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def edit_grade(enrollment_id):
     enrollment = Enrollment.query.get_or_404(enrollment_id)
     lab1 = parse_grade(request.form.get("lab1"))
@@ -255,6 +284,7 @@ def edit_grade(enrollment_id):
 
 @education_bp.route("/notas/<int:enrollment_id>/eliminar", methods=["POST"])
 @login_required
+@role_required(ROLE_ADMIN)
 def delete_grade(enrollment_id):
     enrollment = Enrollment.query.get_or_404(enrollment_id)
     db.session.delete(enrollment)
