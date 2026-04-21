@@ -1,4 +1,7 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from datetime import datetime
+import re
+
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 
 from .auth import login_required, role_required
 from .extensions import db
@@ -6,7 +9,7 @@ from .grading import parse_grade
 from .models import ROLE_ADMIN, Enrollment, Student, Subject, Teacher, User
 
 education_bp = Blueprint("education", __name__)
-DEFAULT_PER_PAGE = 25
+DEFAULT_PER_PAGE = 10
 MAX_PER_PAGE = 100
 
 
@@ -19,6 +22,24 @@ def _pagination_args():
         per_page = DEFAULT_PER_PAGE
     per_page = min(per_page, MAX_PER_PAGE)
     return page, per_page
+
+
+def _slug3(text: str) -> str:
+    letters = re.sub(r"[^A-Za-z]", "", text or "").upper()
+    if len(letters) >= 3:
+        return letters[:3]
+    return (letters + "XXX")[:3]
+
+
+def _generate_subject_code(name: str, year: int | None = None) -> str:
+    y = year or datetime.now().year
+    base = f"{_slug3(name)}{y}"
+    candidate = base
+    n = 1
+    while Subject.query.filter_by(code=candidate).first():
+        n += 1
+        candidate = f"{base}-{n}"
+    return candidate
 
 
 @education_bp.route("/estudiantes", methods=["GET"])
@@ -73,26 +94,137 @@ def delete_student(student_id):
     return redirect(url_for("education.students"))
 
 
-@education_bp.route("/profesores", methods=["GET", "POST"])
+@education_bp.route("/estudiantes/<int:student_id>/materias", methods=["GET"])
+@login_required
+@role_required(ROLE_ADMIN)
+def student_subjects(student_id):
+    student = Student.query.get_or_404(student_id)
+    rows = (
+        db.session.query(
+            Subject.id.label("subject_id"),
+            Subject.name.label("subject_name"),
+            Teacher.full_name.label("teacher_name"),
+        )
+        .join(Enrollment, Enrollment.subject_id == Subject.id)
+        .outerjoin(Teacher, Teacher.id == Subject.teacher_id)
+        .filter(Enrollment.student_id == student.id)
+        .order_by(Subject.name.asc())
+        .all()
+    )
+    return jsonify(
+        {
+            "ok": True,
+            "student": {"id": student.id, "full_name": student.full_name},
+            "subjects": [
+                {
+                    "id": row.subject_id,
+                    "name": row.subject_name,
+                    "teacher_name": row.teacher_name or "Sin asignar",
+                }
+                for row in rows
+            ],
+        }
+    )
+
+
+@education_bp.route("/estudiantes/<int:student_id>/asignar-materias", methods=["GET", "POST"])
+@login_required
+@role_required(ROLE_ADMIN)
+def assign_student_subjects(student_id):
+    student = Student.query.get_or_404(student_id)
+
+    if request.method == "GET":
+        assigned_ids = {
+            e.subject_id for e in Enrollment.query.with_entities(Enrollment.subject_id).filter_by(student_id=student.id).all()
+        }
+        subjects = Subject.query.order_by(Subject.name.asc()).all()
+        return jsonify(
+            {
+                "ok": True,
+                "student": {"id": student.id, "full_name": student.full_name},
+                "subjects": [
+                    {
+                        "id": s.id,
+                        "name": s.name,
+                        "assigned": s.id in assigned_ids,
+                    }
+                    for s in subjects
+                ],
+            }
+        )
+
+    data = request.get_json(silent=True) or {}
+    raw_ids = data.get("subject_ids", [])
+    if not isinstance(raw_ids, list):
+        return jsonify({"ok": False, "error": "Lista de materias invalida."}), 400
+
+    try:
+        selected_ids = {int(v) for v in raw_ids}
+    except (TypeError, ValueError):
+        return jsonify({"ok": False, "error": "IDs de materias invalidos."}), 400
+
+    if not selected_ids:
+        return jsonify({"ok": False, "error": "Selecciona al menos una materia."}), 400
+
+    valid_ids = {
+        sid
+        for (sid,) in db.session.query(Subject.id).filter(Subject.id.in_(selected_ids)).all()
+    }
+    if len(valid_ids) != len(selected_ids):
+        return jsonify({"ok": False, "error": "Algunas materias no existen."}), 400
+
+    existing_ids = {
+        e.subject_id
+        for e in Enrollment.query.with_entities(Enrollment.subject_id).filter_by(student_id=student.id).all()
+    }
+    new_ids = valid_ids - existing_ids
+    for subject_id in new_ids:
+        db.session.add(Enrollment(student_id=student.id, subject_id=subject_id))
+    db.session.commit()
+
+    return jsonify(
+        {
+            "ok": True,
+            "added": len(new_ids),
+            "message": f"Se asignaron {len(new_ids)} materias nuevas.",
+        }
+    )
+
+
+@education_bp.route("/estudiantes/<int:student_id>/materias/<int:subject_id>/notas", methods=["GET"])
+@login_required
+@role_required(ROLE_ADMIN)
+def student_subject_grades(student_id, subject_id):
+    student = Student.query.get_or_404(student_id)
+    subject = Subject.query.get_or_404(subject_id)
+    enrollments = (
+        Enrollment.query.filter_by(student_id=student.id, subject_id=subject.id)
+        .order_by(Enrollment.id.desc())
+        .all()
+    )
+    return jsonify(
+        {
+            "ok": True,
+            "student": {"id": student.id, "full_name": student.full_name},
+            "subject": {"id": subject.id, "name": subject.name},
+            "grades": [
+                {
+                    "id": e.id,
+                    "lab1": e.lab1,
+                    "lab2": e.lab2,
+                    "partial": e.partial,
+                    "final_grade": e.final_grade,
+                }
+                for e in enrollments
+            ],
+        }
+    )
+
+
+@education_bp.route("/profesores", methods=["GET"])
 @login_required
 @role_required(ROLE_ADMIN)
 def teachers():
-    if request.method == "POST":
-        full_name = request.form.get("full_name", "").strip()
-        email = request.form.get("email", "").strip().lower()
-        if not full_name or not email:
-            flash("Nombre y correo son obligatorios.", "error")
-            return redirect(url_for("education.teachers"))
-
-        if Teacher.query.filter_by(email=email).first():
-            flash("Ya existe un profesor con ese correo.", "error")
-            return redirect(url_for("education.teachers"))
-
-        db.session.add(Teacher(full_name=full_name, email=email))
-        db.session.commit()
-        flash("Profesor creado correctamente.", "success")
-        return redirect(url_for("education.teachers"))
-
     page, per_page = _pagination_args()
     teachers_pagination = Teacher.query.order_by(Teacher.id.desc()).paginate(
         page=page, per_page=per_page, error_out=False
@@ -101,6 +233,63 @@ def teachers():
         "teachers.html",
         teachers=teachers_pagination.items,
         teachers_pagination=teachers_pagination,
+    )
+
+
+@education_bp.route("/profesores/<int:teacher_id>/asignar-materias", methods=["GET", "POST"])
+@login_required
+@role_required(ROLE_ADMIN)
+def assign_teacher_subjects(teacher_id):
+    teacher = Teacher.query.get_or_404(teacher_id)
+
+    if request.method == "GET":
+        subjects = Subject.query.order_by(Subject.name.asc()).all()
+        return jsonify(
+            {
+                "ok": True,
+                "teacher": {"id": teacher.id, "full_name": teacher.full_name},
+                "subjects": [
+                    {
+                        "id": s.id,
+                        "name": s.name,
+                        "assigned": s.teacher_id == teacher.id,
+                        "current_teacher": s.teacher.full_name if s.teacher else None,
+                    }
+                    for s in subjects
+                ],
+            }
+        )
+
+    data = request.get_json(silent=True) or {}
+    raw_ids = data.get("subject_ids", [])
+    if not isinstance(raw_ids, list):
+        return jsonify({"ok": False, "error": "Lista de materias invalida."}), 400
+
+    try:
+        selected_ids = {int(v) for v in raw_ids}
+    except (TypeError, ValueError):
+        return jsonify({"ok": False, "error": "IDs de materias invalidos."}), 400
+
+    if not selected_ids:
+        return jsonify({"ok": False, "error": "Selecciona al menos una materia."}), 400
+
+    selected_subjects = Subject.query.filter(Subject.id.in_(selected_ids)).all()
+    if len(selected_subjects) != len(selected_ids):
+        return jsonify({"ok": False, "error": "Algunas materias no existen."}), 400
+
+    changed = 0
+    for subject in selected_subjects:
+        if subject.teacher_id != teacher.id:
+            subject.teacher_id = teacher.id
+            changed += 1
+    db.session.commit()
+
+    return jsonify(
+        {
+            "ok": True,
+            "changed": changed,
+            "message": f"Se asignaron {changed} materias al profesor.",
+        }
     )
 
 
@@ -149,18 +338,24 @@ def delete_teacher(teacher_id):
 def subjects():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
+        section = request.form.get("section", "A").strip().upper()
         teacher_id = request.form.get("teacher_id", "").strip()
 
         if not name:
             flash("El nombre de la materia es obligatorio.", "error")
             return redirect(url_for("education.subjects"))
 
-        if Subject.query.filter_by(name=name).first():
-            flash("Ya existe una materia con ese nombre.", "error")
+        if section not in {"A", "B", "C"}:
+            flash("La seccion debe ser A, B o C.", "error")
             return redirect(url_for("education.subjects"))
 
+        if Subject.query.filter_by(name=name, section=section).first():
+            flash("Ya existe una materia con ese nombre y seccion.", "error")
+            return redirect(url_for("education.subjects"))
+
+        code = _generate_subject_code(name)
         teacher = Teacher.query.get(int(teacher_id)) if teacher_id else None
-        db.session.add(Subject(name=name, teacher=teacher))
+        db.session.add(Subject(name=name, section=section, code=code, teacher=teacher))
         db.session.commit()
         flash("Materia creada correctamente.", "success")
         return redirect(url_for("education.subjects"))
@@ -178,24 +373,89 @@ def subjects():
     )
 
 
+@education_bp.route("/materias/<int:subject_id>/profesores", methods=["GET"])
+@login_required
+@role_required(ROLE_ADMIN)
+def subject_teachers(subject_id):
+    subject = Subject.query.get_or_404(subject_id)
+    teachers = []
+    if subject.teacher:
+        teachers.append(
+            {
+                "id": subject.teacher.id,
+                "full_name": subject.teacher.full_name,
+                "email": subject.teacher.email,
+            }
+        )
+    return jsonify(
+        {
+            "ok": True,
+            "subject": {
+                "id": subject.id,
+                "name": subject.name,
+                "section": subject.section,
+                "code": subject.code,
+            },
+            "teachers": teachers,
+        }
+    )
+
+
+@education_bp.route("/materias/<int:subject_id>/estudiantes", methods=["GET"])
+@login_required
+@role_required(ROLE_ADMIN)
+def subject_students(subject_id):
+    subject = Subject.query.get_or_404(subject_id)
+    rows = (
+        db.session.query(Student.id, Student.full_name, Student.email)
+        .join(Enrollment, Enrollment.student_id == Student.id)
+        .filter(Enrollment.subject_id == subject.id)
+        .order_by(Student.full_name.asc())
+        .all()
+    )
+    return jsonify(
+        {
+            "ok": True,
+            "subject": {
+                "id": subject.id,
+                "name": subject.name,
+                "section": subject.section,
+                "code": subject.code,
+            },
+            "students": [
+                {"id": r.id, "full_name": r.full_name, "email": r.email}
+                for r in rows
+            ],
+        }
+    )
+
+
 @education_bp.route("/materias/<int:subject_id>/editar", methods=["POST"])
 @login_required
 @role_required(ROLE_ADMIN)
 def edit_subject(subject_id):
     subject = Subject.query.get_or_404(subject_id)
     name = request.form.get("name", "").strip()
+    section = request.form.get("section", subject.section).strip().upper()
     teacher_id = request.form.get("teacher_id", "").strip()
 
     if not name:
         flash("El nombre de la materia es obligatorio.", "error")
         return redirect(url_for("education.subjects"))
 
-    existing = Subject.query.filter(Subject.name == name, Subject.id != subject.id).first()
+    if section not in {"A", "B", "C"}:
+        flash("La seccion debe ser A, B o C.", "error")
+        return redirect(url_for("education.subjects"))
+
+    existing = Subject.query.filter(
+        Subject.name == name, Subject.section == section, Subject.id != subject.id
+    ).first()
     if existing:
-        flash("Ese nombre de materia ya existe.", "error")
+        flash("Ese nombre de materia ya existe en esa seccion.", "error")
         return redirect(url_for("education.subjects"))
 
     subject.name = name
+    subject.section = section
     subject.teacher_id = int(teacher_id) if teacher_id else None
     db.session.commit()
     flash("Materia actualizada.", "success")

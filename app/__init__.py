@@ -3,6 +3,7 @@ import os
 import click
 from flask import Flask, g, session
 from dotenv import load_dotenv
+from flask_migrate import upgrade
 
 from .extensions import db, migrate
 from .models import ROLE_ADMIN, User
@@ -21,6 +22,9 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     with app.app_context():
+        # Aplica cambios de esquema pendientes al arrancar.
+        upgrade()
+        # Crea tablas faltantes si aun no existen.
         db.create_all()
 
     @app.before_request

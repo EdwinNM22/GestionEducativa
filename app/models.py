@@ -59,7 +59,9 @@ class Subject(db.Model):
     __tablename__ = "subjects"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    section = db.Column(db.String(1), nullable=False, default="A")
+    code = db.Column(db.String(20), unique=True, nullable=False)
     teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"), nullable=True)
     created_at = db.Column(db.DateTime, server_default=db.func.now(), nullable=False)
 

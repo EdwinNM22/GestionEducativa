@@ -5,7 +5,7 @@ from .extensions import db
 from .models import ROLE_ADMIN, ROLE_STUDENT, ROLE_TEACHER, ROLES, Student, Teacher, User
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
-DEFAULT_PER_PAGE = 25
+DEFAULT_PER_PAGE = 10
 MAX_PER_PAGE = 100
 
 

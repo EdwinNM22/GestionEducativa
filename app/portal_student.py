@@ -5,7 +5,7 @@ from .grading import PASSING_GRADE
 from .models import ROLE_STUDENT, Enrollment
 
 alumno_bp = Blueprint("alumno", __name__, url_prefix="/alumno")
-DEFAULT_PER_PAGE = 25
+DEFAULT_PER_PAGE = 10
 MAX_PER_PAGE = 100
 
 

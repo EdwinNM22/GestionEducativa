@@ -4,17 +4,10 @@
 
 {% block content %}
     <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 class="text-2xl font-bold">Materias</h1>
-        <form method="post" class="mt-4 grid grid-cols-1 gap-3 lg:grid-cols-3">
-            <input name="name" type="text" placeholder="Nombre de la materia" required class="rounded-md border border-slate-300 px-3 py-2">
-            <select name="teacher_id" class="rounded-md border border-slate-300 px-3 py-2">
-                <option value="">Sin profesor</option>
-                {% for teacher in teachers %}
-                    <option value="{{ teacher.id }}">{{ teacher.full_name }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-500">Agregar materia</button>
-        </form>
+        <div class="flex items-center justify-between gap-3">
+            <h1 class="text-2xl font-bold">Materias</h1>
+            <button type="button" id="openCreateSubjectModal" class="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Agregar materia</button>
+        </div>
     </section>
 
     <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -25,7 +18,9 @@
                     <thead class="bg-slate-100 text-slate-700">
                         <tr>
                             <th class="px-3 py-2 text-left">ID</th>
+                            <th class="px-3 py-2 text-left">Codigo</th>
                             <th class="px-3 py-2 text-left">Materia</th>
+                            <th class="px-3 py-2 text-left">Seccion</th>
                             <th class="px-3 py-2 text-left">Profesor</th>
                             <th class="px-3 py-2 text-left">Acciones</th>
                         </tr>
@@ -34,22 +29,13 @@
                         {% for item in subjects %}
                             <tr class="border-b border-slate-200">
                                 <td class="px-3 py-2">{{ item.id }}</td>
+                                <td class="px-3 py-2 font-medium">{{ item.code }}</td>
                                 <td class="px-3 py-2">{{ item.name }}</td>
+                                <td class="px-3 py-2">{{ item.section }}</td>
                                 <td class="px-3 py-2">{{ item.teacher.full_name if item.teacher else "Sin asignar" }}</td>
-                                <td class="px-3 py-2">
-                                    <form method="post" action="{{ url_for('education.edit_subject', subject_id=item.id) }}" class="mb-2 grid grid-cols-1 gap-2 lg:grid-cols-3">
-                                        <input name="name" type="text" value="{{ item.name }}" required class="rounded-md border border-slate-300 px-2 py-1.5">
-                                        <select name="teacher_id" class="rounded-md border border-slate-300 px-2 py-1.5">
-                                            <option value="">Sin profesor</option>
-                                            {% for teacher in teachers %}
-                                                <option value="{{ teacher.id }}" {% if item.teacher_id == teacher.id %}selected{% endif %}>{{ teacher.full_name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                        <button type="submit" class="rounded-md bg-slate-800 px-3 py-1.5 text-white hover:bg-slate-700">Guardar</button>
-                                    </form>
-                                    <form method="post" action="{{ url_for('education.delete_subject', subject_id=item.id) }}">
-                                        <button type="submit" class="rounded-md bg-rose-600 px-3 py-1.5 text-white hover:bg-rose-500">Eliminar</button>
-                                    </form>
+                                <td class="px-3 py-2 space-x-2">
+                                    <button type="button" class="open-subject-teachers rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50" data-subject-id="{{ item.id }}">Ver profesores</button>
+                                    <button type="button" class="open-subject-students rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100" data-subject-id="{{ item.id }}">Ver estudiantes</button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -63,4 +49,125 @@
         {% set endpoint = 'education.subjects' %}
         {% include '_pagination.html' %}
     </section>
+
+    <div id="createSubjectModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="createSubjectModalTitle">
+        <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div class="flex items-start justify-between gap-3">
+                <h3 id="createSubjectModalTitle" class="text-lg font-semibold text-slate-900">Agregar materia</h3>
+                <button type="button" id="closeCreateSubjectModal" class="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Cerrar">&times;</button>
+            </div>
+            <form method="post" class="mt-4 grid gap-3">
+                <div>
+                    <label class="text-sm text-slate-600">Nombre</label>
+                    <input name="name" type="text" required class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                </div>
+                <div>
+                    <label class="text-sm text-slate-600">Seccion</label>
+                    <select name="section" required class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-sm text-slate-600">Profesor</label>
+                    <select name="teacher_id" class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                        <option value="">Sin profesor</option>
+                        {% for teacher in teachers %}
+                            <option value="{{ teacher.id }}">{{ teacher.full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mt-2 flex justify-end gap-2">
+                    <button type="button" id="cancelCreateSubjectModal" class="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" class="rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="subjectDetailModal" class="fixed inset-0 z-[110] hidden items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="subjectDetailModalTitle">
+        <div class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div class="flex items-start justify-between gap-3">
+                <h3 id="subjectDetailModalTitle" class="text-lg font-semibold text-slate-900">Detalle de materia</h3>
+                <button type="button" id="closeSubjectDetailModal" class="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Cerrar">&times;</button>
+            </div>
+            <p id="subjectDetailSubtitle" class="mt-1 text-sm text-slate-600"></p>
+            <div id="subjectDetailBody" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+        const createSubjectModal = document.getElementById("createSubjectModal");
+        function openModal(el) { el.classList.remove("hidden"); el.classList.add("flex"); }
+        function closeModal(el) { el.classList.add("hidden"); el.classList.remove("flex"); }
+        document.getElementById("openCreateSubjectModal").addEventListener("click", () => openModal(createSubjectModal));
+        document.getElementById("closeCreateSubjectModal").addEventListener("click", () => closeModal(createSubjectModal));
+        document.getElementById("cancelCreateSubjectModal").addEventListener("click", () => closeModal(createSubjectModal));
+        createSubjectModal.addEventListener("click", (e) => { if (e.target === createSubjectModal) closeModal(createSubjectModal); });
+
+        const subjectDetailModal = document.getElementById("subjectDetailModal");
+        const subjectDetailSubtitle = document.getElementById("subjectDetailSubtitle");
+        const subjectDetailBody = document.getElementById("subjectDetailBody");
+        function escHtml(s) {
+            const t = document.createElement("textarea");
+            t.textContent = s == null ? "" : String(s);
+            return t.innerHTML;
+        }
+        function subjectLabel(subject) {
+            return escHtml((subject.name || "") + " - " + (subject.section || "") + " (" + (subject.code || "") + ")");
+        }
+        document.querySelectorAll(".open-subject-teachers").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                subjectDetailSubtitle.textContent = "";
+                subjectDetailBody.innerHTML = "<p class=\"text-sm text-slate-500\">Cargando...</p>";
+                openModal(subjectDetailModal);
+                const url = "{{ url_for('education.subject_teachers', subject_id=0) }}".replace("/0", "/" + encodeURIComponent(btn.dataset.subjectId));
+                const response = await fetch(url);
+                if (!response.ok) {
+                    subjectDetailBody.innerHTML = "<p class=\"text-sm text-rose-600\">No se pudo cargar la informacion.</p>";
+                    return;
+                }
+                const payload = await response.json();
+                subjectDetailSubtitle.innerHTML = subjectLabel(payload.subject || {});
+                const rows = payload.teachers || [];
+                if (!rows.length) {
+                    subjectDetailBody.innerHTML = "<p class=\"text-sm text-slate-500\">No hay profesor asignado.</p>";
+                    return;
+                }
+                let body = "";
+                rows.forEach((t) => {
+                    body += "<tr class=\"border-b border-slate-200\"><td class=\"px-3 py-2\">" + escHtml(t.full_name) + "</td><td class=\"px-3 py-2\">" + escHtml(t.email) + "</td></tr>";
+                });
+                subjectDetailBody.innerHTML = "<div class=\"overflow-x-auto\"><table class=\"min-w-full text-sm\"><thead class=\"bg-slate-100 text-slate-700\"><tr><th class=\"px-3 py-2 text-left\">Profesor</th><th class=\"px-3 py-2 text-left\">Correo</th></tr></thead><tbody>" + body + "</tbody></table></div>";
+            });
+        });
+        document.querySelectorAll(".open-subject-students").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                subjectDetailSubtitle.textContent = "";
+                subjectDetailBody.innerHTML = "<p class=\"text-sm text-slate-500\">Cargando...</p>";
+                openModal(subjectDetailModal);
+                const url = "{{ url_for('education.subject_students', subject_id=0) }}".replace("/0", "/" + encodeURIComponent(btn.dataset.subjectId));
+                const response = await fetch(url);
+                if (!response.ok) {
+                    subjectDetailBody.innerHTML = "<p class=\"text-sm text-rose-600\">No se pudo cargar la informacion.</p>";
+                    return;
+                }
+                const payload = await response.json();
+                subjectDetailSubtitle.innerHTML = subjectLabel(payload.subject || {});
+                const rows = payload.students || [];
+                if (!rows.length) {
+                    subjectDetailBody.innerHTML = "<p class=\"text-sm text-slate-500\">No hay estudiantes asignados.</p>";
+                    return;
+                }
+                let body = "";
+                rows.forEach((s) => {
+                    body += "<tr class=\"border-b border-slate-200\"><td class=\"px-3 py-2\">" + escHtml(s.full_name) + "</td><td class=\"px-3 py-2\">" + escHtml(s.email) + "</td></tr>";
+                });
+                subjectDetailBody.innerHTML = "<div class=\"overflow-x-auto\"><table class=\"min-w-full text-sm\"><thead class=\"bg-slate-100 text-slate-700\"><tr><th class=\"px-3 py-2 text-left\">Estudiante</th><th class=\"px-3 py-2 text-left\">Correo</th></tr></thead><tbody>" + body + "</tbody></table></div>";
+            });
+        });
+        document.getElementById("closeSubjectDetailModal").addEventListener("click", () => closeModal(subjectDetailModal));
+        subjectDetailModal.addEventListener("click", (e) => { if (e.target === subjectDetailModal) closeModal(subjectDetailModal); });
+    </script>
 {% endblock %}
