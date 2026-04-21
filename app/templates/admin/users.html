@@ -1,51 +1,46 @@
 {% extends "base.html" %}
+{% import "components/ui.html" as ui %}
 {% block title %}Usuarios | Admin{% endblock %}
 {% block content %}
-    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex flex-wrap items-start justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-bold">Gestion de usuarios</h1>
-                <p class="mt-1 text-slate-600">Crear cuentas y asignar rol.</p>
-            </div>
-            <button type="button" id="openCreateUserModal" class="shrink-0 rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-700">
-                Crear nuevo usuario
-            </button>
-        </div>
+    {% call ui.glass_panel("p-6 sm:p-8") %}
+        {% call ui.page_header_row("Gestion de usuarios", "Crear cuentas y asignar rol.", "Admin") %}
+            <button type="button" id="openCreateUserModal" class="app-btn-primary shrink-0">Crear nuevo usuario</button>
+        {% endcall %}
 
-        <h2 class="mt-8 font-semibold text-slate-900">Listado</h2>
-        <div class="mt-4 overflow-x-auto">
-            <table class="min-w-full text-sm">
-                <thead class="bg-slate-100">
+        {{ ui.section_title("Listado de usuarios", "mt-8") }}
+        <div class="mt-4 overflow-x-auto rounded-xl border border-cyan-500/15">
+            <table class="app-data-table">
+                <thead>
                     <tr>
-                        <th class="px-3 py-2 text-left">ID</th>
-                        <th class="px-3 py-2 text-left">Usuario</th>
-                        <th class="px-3 py-2 text-left">Correo</th>
-                        <th class="px-3 py-2 text-left">Rol</th>
-                        <th class="px-3 py-2 text-left"></th>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Correo</th>
+                        <th>Rol</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody id="usersTbody">
                     {% for u in users %}
-                        <tr class="border-b border-slate-200" data-user-id="{{ u.id }}">
-                            <td class="px-3 py-2">{{ u.id }}</td>
-                            <td class="px-3 py-2">{{ u.username }}</td>
-                            <td class="px-3 py-2">{{ u.email }}</td>
-                            <td class="px-3 py-2"><span class="rounded bg-slate-100 px-2 py-0.5 text-xs user-role-cell">{{ role_labels.get(u.role, u.role) }}</span></td>
-                            <td class="px-3 py-2 text-right user-actions-cell">
+                        <tr class="border-b border-cyan-500/10" data-user-id="{{ u.id }}">
+                            <td>{{ u.id }}</td>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.email }}</td>
+                            <td><span class="app-badge-cyan user-role-cell">{{ role_labels.get(u.role, u.role) }}</span></td>
+                            <td class="text-right user-actions-cell">
                                 {% if u.id != g.user.id %}
                                     <button
                                         type="button"
-                                        class="edit-user-btn rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                                        class="edit-user-btn app-btn-ghost"
                                         data-id="{{ u.id }}"
                                         data-username="{{ u.username }}"
                                         data-email="{{ u.email }}"
                                         data-role="{{ u.role }}"
                                     >Editar</button>
                                     <form method="post" action="{{ url_for('admin.delete_user', user_id=u.id) }}" class="ml-2 inline" onsubmit="return confirm('Eliminar este usuario?');">
-                                        <button type="submit" class="rounded-md border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 hover:bg-rose-100">Eliminar</button>
+                                        <button type="submit" class="app-btn-danger">Eliminar</button>
                                     </form>
                                 {% else %}
-                                    <span class="text-slate-400">—</span>
+                                    <span class="text-slate-500">—</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -56,80 +51,74 @@
         {% set pagination = users_pagination %}
         {% set endpoint = 'admin.users_list' %}
         {% include '_pagination.html' %}
-    </section>
+    {% endcall %}
 
-    <div id="createUserModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="createUserModalTitle">
-        <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
-            <div class="flex items-start justify-between gap-3">
-                <h3 id="createUserModalTitle" class="text-lg font-semibold text-slate-900">Nuevo usuario</h3>
-                <button type="button" id="closeCreateUserModal" class="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Cerrar">&times;</button>
-            </div>
-            <p id="createUserError" class="mt-3 hidden rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"></p>
+    {% call ui.modal_backdrop("createUserModal", "createUserModalTitle") %}
+        {% call ui.modal_panel() %}
+            {{ ui.modal_header_close("createUserModalTitle", "Nuevo usuario", "closeCreateUserModal") }}
+            <p id="createUserError" class="app-alert-error mt-3 hidden"></p>
             <form id="createUserForm" class="mt-4 grid gap-3">
                 <div>
-                    <label class="text-sm text-slate-600">Usuario</label>
-                    <input type="text" name="username" required class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm" autocomplete="username" />
+                    <label class="app-label">Usuario</label>
+                    <input type="text" name="username" required class="app-input mt-1" autocomplete="username" />
                 </div>
                 <div>
-                    <label class="text-sm text-slate-600">Correo</label>
-                    <input type="email" name="email" required class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm" autocomplete="off" />
+                    <label class="app-label">Correo</label>
+                    <input type="email" name="email" required class="app-input mt-1" autocomplete="off" />
                 </div>
                 <div>
-                    <label class="text-sm text-slate-600">Contrasena</label>
-                    <input type="password" name="password" required class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm" autocomplete="new-password" />
+                    <label class="app-label">Contrasena</label>
+                    <input type="password" name="password" required class="app-input mt-1" autocomplete="new-password" />
                 </div>
                 <div>
-                    <label class="text-sm text-slate-600">Rol</label>
-                    <select name="role" id="modalUserRole" required class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm">
+                    <label class="app-label">Rol</label>
+                    <select name="role" id="modalUserRole" required class="app-input mt-1">
                         {% for r in roles %}
                             <option value="{{ r }}">{{ role_labels.get(r, r) }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div class="mt-2 flex flex-wrap gap-2">
-                    <button type="submit" id="createUserSubmit" class="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Guardar</button>
-                    <button type="button" id="cancelCreateUserModal" class="rounded-md border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" id="createUserSubmit" class="app-btn-primary">Guardar</button>
+                    <button type="button" id="cancelCreateUserModal" class="app-btn-secondary">Cancelar</button>
                 </div>
             </form>
-        </div>
-    </div>
+        {% endcall %}
+    {% endcall %}
 
-    <div id="editUserModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="editUserModalTitle">
-        <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
-            <div class="flex items-start justify-between gap-3">
-                <h3 id="editUserModalTitle" class="text-lg font-semibold text-slate-900">Editar usuario</h3>
-                <button type="button" id="closeEditUserModal" class="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Cerrar">&times;</button>
-            </div>
-            <p id="editUserError" class="mt-3 hidden rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700"></p>
+    {% call ui.modal_backdrop("editUserModal", "editUserModalTitle") %}
+        {% call ui.modal_panel() %}
+            {{ ui.modal_header_close("editUserModalTitle", "Editar usuario", "closeEditUserModal") }}
+            <p id="editUserError" class="app-alert-error mt-3 hidden"></p>
             <form id="editUserForm" class="mt-4 grid gap-3">
                 <input type="hidden" name="user_id" id="editUserId" />
                 <div>
-                    <label class="text-sm text-slate-600">Usuario</label>
-                    <input type="text" name="username" id="editUsername" required class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+                    <label class="app-label">Usuario</label>
+                    <input type="text" name="username" id="editUsername" required class="app-input mt-1" />
                 </div>
                 <div>
-                    <label class="text-sm text-slate-600">Correo</label>
-                    <input type="email" name="email" id="editEmail" required class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm" />
+                    <label class="app-label">Correo</label>
+                    <input type="email" name="email" id="editEmail" required class="app-input mt-1" />
                 </div>
                 <div>
-                    <label class="text-sm text-slate-600">Rol</label>
-                    <select name="role" id="editRole" required class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm">
+                    <label class="app-label">Rol</label>
+                    <select name="role" id="editRole" required class="app-input mt-1">
                         {% for r in roles %}
                             <option value="{{ r }}">{{ role_labels.get(r, r) }}</option>
                         {% endfor %}
                     </select>
                 </div>
                 <div>
-                    <label class="text-sm text-slate-600">Nueva contrasena (opcional)</label>
-                    <input type="password" name="password" id="editPassword" class="mt-1 w-full rounded border border-slate-300 px-3 py-2 text-sm" autocomplete="new-password" />
+                    <label class="app-label">Nueva contrasena (opcional)</label>
+                    <input type="password" name="password" id="editPassword" class="app-input mt-1" autocomplete="new-password" />
                 </div>
                 <div class="mt-2 flex flex-wrap gap-2">
-                    <button type="submit" id="editUserSubmit" class="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Guardar cambios</button>
-                    <button type="button" id="cancelEditUserModal" class="rounded-md border border-slate-200 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Cancelar</button>
+                    <button type="submit" id="editUserSubmit" class="app-btn-primary">Guardar cambios</button>
+                    <button type="button" id="cancelEditUserModal" class="app-btn-secondary">Cancelar</button>
                 </div>
             </form>
-        </div>
-    </div>
+        {% endcall %}
+    {% endcall %}
 
     <script>
         (function () {
@@ -139,7 +128,6 @@
             var errBox = document.getElementById("createUserError");
             var tbody = document.getElementById("usersTbody");
             var postUrl = "{{ url_for('admin.users_list') }}";
-            var editUrlBase = "{{ url_for('admin.users_list') }}";
 
             function openModal() {
                 errBox.classList.add("hidden");
@@ -226,27 +214,27 @@
                     }
                     var u = data.user;
                     var tr = document.createElement("tr");
-                    tr.className = "border-b border-slate-200";
+                    tr.className = "border-b border-cyan-500/10";
                     tr.dataset.userId = String(u.id);
                     tr.innerHTML =
-                        '<td class="px-3 py-2">' +
+                        "<td>" +
                         esc(u.id) +
                         "</td>" +
-                        '<td class="px-3 py-2">' +
+                        "<td>" +
                         esc(u.username) +
                         "</td>" +
-                        '<td class="px-3 py-2">' +
+                        "<td>" +
                         esc(u.email) +
                         "</td>" +
-                        '<td class="px-3 py-2"><span class="rounded bg-slate-100 px-2 py-0.5 text-xs user-role-cell">' +
+                        '<td><span class="app-badge-cyan user-role-cell">' +
                         esc(u.role_label || roleLabels[u.role] || u.role) +
                         "</span></td>" +
-                        '<td class="px-3 py-2 text-right user-actions-cell"></td>';
+                        '<td class="user-actions-cell text-right"></td>';
                     var actionCell = tr.querySelector(".user-actions-cell");
                     if (u.id !== currentUserId && data.delete_url) {
                         var editBtn = document.createElement("button");
                         editBtn.type = "button";
-                        editBtn.className = "edit-user-btn rounded-md border border-slate-300 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50";
+                        editBtn.className = "edit-user-btn app-btn-ghost";
                         editBtn.textContent = "Editar";
                         editBtn.setAttribute("data-id", String(u.id));
                         editBtn.setAttribute("data-username", u.username);
@@ -263,12 +251,12 @@
                         };
                         var delBtn = document.createElement("button");
                         delBtn.type = "submit";
-                        delBtn.className = "rounded-md border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700 hover:bg-rose-100";
+                        delBtn.className = "app-btn-danger";
                         delBtn.textContent = "Eliminar";
                         f.appendChild(delBtn);
                         actionCell.appendChild(f);
                     } else {
-                        actionCell.innerHTML = '<span class="text-slate-400">—</span>';
+                        actionCell.innerHTML = '<span class="text-slate-500">—</span>';
                     }
                     tbody.insertBefore(tr, tbody.firstChild);
                     bindEditButtons();

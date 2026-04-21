@@ -1,70 +1,71 @@
 {% extends "base.html" %}
+{% import "components/ui.html" as ui %}
 
 {% block title %}Notas | Gestion Educativa{% endblock %}
 
 {% block content %}
-    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 class="text-2xl font-bold">Notas por materia</h1>
+    {% call ui.glass_panel("p-6 sm:p-8") %}
+        {{ ui.page_header_simple("Notas por materia", "Registrar calificaciones por estudiante y materia") }}
         <form method="post" class="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-6">
-            <select id="gradeStudentSelect" name="student_id" required class="rounded-md border border-slate-300 px-3 py-2">
+            <select id="gradeStudentSelect" name="student_id" required class="app-input">
                 <option value="">Selecciona estudiante</option>
                 {% for student in students %}
                     <option value="{{ student.id }}">{{ student.full_name }}</option>
                 {% endfor %}
             </select>
-            <select id="gradeSubjectSelect" name="subject_id" required class="rounded-md border border-slate-300 px-3 py-2">
+            <select id="gradeSubjectSelect" name="subject_id" required class="app-input">
                 <option value="">Primero selecciona estudiante</option>
             </select>
-            <input name="lab1" type="number" step="0.01" min="0" max="10" placeholder="Lab 1 (25%)" required class="rounded-md border border-slate-300 px-3 py-2">
-            <input name="lab2" type="number" step="0.01" min="0" max="10" placeholder="Lab 2 (25%)" required class="rounded-md border border-slate-300 px-3 py-2">
-            <input name="partial" type="number" step="0.01" min="0" max="10" placeholder="Parcial (50%)" required class="rounded-md border border-slate-300 px-3 py-2">
-            <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-500">Guardar notas</button>
+            <input name="lab1" type="number" step="0.01" min="0" max="10" placeholder="Lab 1 (25%)" required class="app-input" />
+            <input name="lab2" type="number" step="0.01" min="0" max="10" placeholder="Lab 2 (25%)" required class="app-input" />
+            <input name="partial" type="number" step="0.01" min="0" max="10" placeholder="Parcial (50%)" required class="app-input" />
+            <button type="submit" class="app-btn-primary self-end py-2.5">Guardar notas</button>
         </form>
-    </section>
+    {% endcall %}
 
-    <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 class="text-xl font-semibold">Registros</h2>
+    {% call ui.glass_panel("mt-6 p-6 sm:p-8") %}
+        {{ ui.section_title("Registros", "mb-4 mt-0") }}
         {% if enrollments %}
-            <div class="mt-4 overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-slate-100 text-slate-700">
+            <div class="mt-4 overflow-x-auto rounded-xl border border-cyan-500/15">
+                <table class="app-data-table">
+                    <thead>
                         <tr>
-                            <th class="px-3 py-2 text-left">Estudiante</th>
-                            <th class="px-3 py-2 text-left">Materia</th>
-                            <th class="px-3 py-2 text-left">Lab 1</th>
-                            <th class="px-3 py-2 text-left">Lab 2</th>
-                            <th class="px-3 py-2 text-left">Parcial</th>
-                            <th class="px-3 py-2 text-left">Nota final</th>
-                            <th class="px-3 py-2 text-left">Acciones</th>
+                            <th>Estudiante</th>
+                            <th>Materia</th>
+                            <th>Lab 1</th>
+                            <th>Lab 2</th>
+                            <th>Parcial</th>
+                            <th>Nota final</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in enrollments %}
-                            <tr class="border-b border-slate-200">
-                                <td class="px-3 py-2">{{ item.student.full_name }}</td>
-                                <td class="px-3 py-2">{{ item.subject.name }}</td>
-                                <td class="px-3 py-2">{{ item.lab1 }}</td>
-                                <td class="px-3 py-2">{{ item.lab2 }}</td>
-                                <td class="px-3 py-2">{{ item.partial }}</td>
-                                <td class="px-3 py-2 font-semibold">{{ item.final_grade }}</td>
-                                <td class="px-3 py-2">
+                            <tr class="border-b border-cyan-500/10">
+                                <td>{{ item.student.full_name }}</td>
+                                <td>{{ item.subject.name }}</td>
+                                <td>{{ item.lab1 }}</td>
+                                <td>{{ item.lab2 }}</td>
+                                <td>{{ item.partial }}</td>
+                                <td class="font-semibold">{{ item.final_grade }}</td>
+                                <td>
                                     <form method="post" action="{{ url_for('education.edit_grade', enrollment_id=item.id) }}" class="mb-2 grid grid-cols-1 gap-2 md:grid-cols-4">
                                         <div>
-                                            <label class="mb-1 block text-[11px] font-medium text-slate-600">Lab 1</label>
-                                            <input name="lab1" type="number" step="0.01" min="0" max="10" value="{{ item.lab1 }}" required class="w-full rounded-md border border-slate-300 px-2 py-1.5">
+                                            <label class="mb-1 block text-[11px] font-medium text-slate-500">Lab 1</label>
+                                            <input name="lab1" type="number" step="0.01" min="0" max="10" value="{{ item.lab1 }}" required class="app-input py-1.5 text-sm" />
                                         </div>
                                         <div>
-                                            <label class="mb-1 block text-[11px] font-medium text-slate-600">Lab 2</label>
-                                            <input name="lab2" type="number" step="0.01" min="0" max="10" value="{{ item.lab2 }}" required class="w-full rounded-md border border-slate-300 px-2 py-1.5">
+                                            <label class="mb-1 block text-[11px] font-medium text-slate-500">Lab 2</label>
+                                            <input name="lab2" type="number" step="0.01" min="0" max="10" value="{{ item.lab2 }}" required class="app-input py-1.5 text-sm" />
                                         </div>
                                         <div>
-                                            <label class="mb-1 block text-[11px] font-medium text-slate-600">Parcial</label>
-                                            <input name="partial" type="number" step="0.01" min="0" max="10" value="{{ item.partial }}" required class="w-full rounded-md border border-slate-300 px-2 py-1.5">
+                                            <label class="mb-1 block text-[11px] font-medium text-slate-500">Parcial</label>
+                                            <input name="partial" type="number" step="0.01" min="0" max="10" value="{{ item.partial }}" required class="app-input py-1.5 text-sm" />
                                         </div>
-                                        <button type="submit" class="rounded-md bg-slate-800 px-3 py-1.5 text-white hover:bg-slate-700">Guardar</button>
+                                        <button type="submit" class="app-btn-primary self-end py-1.5 text-sm">Guardar</button>
                                     </form>
                                     <form method="post" action="{{ url_for('education.delete_grade', enrollment_id=item.id) }}">
-                                        <button type="submit" class="rounded-md bg-rose-600 px-3 py-1.5 text-white hover:bg-rose-500">Eliminar</button>
+                                        <button type="submit" class="app-btn-danger">Eliminar</button>
                                     </form>
                                 </td>
                             </tr>
@@ -73,12 +74,12 @@
                 </table>
             </div>
         {% else %}
-            <p class="mt-3 text-slate-500">No hay notas registradas.</p>
+            {{ ui.empty_state("No hay notas registradas.") }}
         {% endif %}
         {% set pagination = enrollments_pagination %}
         {% set endpoint = 'education.grades' %}
         {% include '_pagination.html' %}
-    </section>
+    {% endcall %}
 
     <script>
         const gradeStudentSelect = document.getElementById("gradeStudentSelect");
@@ -100,7 +101,7 @@
             }
 
             resetSubjects("Cargando materias...");
-            const url = "{{ url_for('education.student_subjects', student_id=0) }}".replace("/0", "/" + encodeURIComponent(studentId));
+            const url = "{{ url_for('education.student_subjects', student_id=0) }}".replace("/0/", "/" + encodeURIComponent(studentId) + "/");
             const response = await fetch(url);
             if (!response.ok) {
                 resetSubjects("No se pudieron cargar materias");

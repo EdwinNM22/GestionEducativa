@@ -1,28 +1,28 @@
 {% extends "base.html" %}
+{% import "components/ui.html" as ui %}
 {% block title %}Mis materias | Gestion Educativa{% endblock %}
 {% block content %}
-    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 class="text-2xl font-bold">Materias asignadas</h1>
-        <p class="mt-1 text-slate-600">Gestiona las notas de cada materia.</p>
+    {% call ui.glass_panel("p-6 sm:p-8") %}
+        {{ ui.page_header_simple("Materias asignadas", "Gestiona las notas de cada materia") }}
         {% if not g.user.teacher_id %}
-            <p class="mt-4 text-rose-700">Tu cuenta no esta vinculada a un perfil de profesor.</p>
+            {{ ui.alert_danger("Tu cuenta no esta vinculada a un perfil de profesor.") }}
         {% elif subjects %}
             <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {% for s in subjects %}
-                    <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <article class="app-course-card">
                         {% if s.image_path %}
-                            <div class="h-28 bg-cover bg-center" style="background-image: linear-gradient(rgba(15,23,42,.35), rgba(15,23,42,.35)), url('{{ url_for('static', filename=s.image_path) }}');"></div>
+                            <div class="h-28 bg-cover bg-center" style="background-image: linear-gradient(rgba(5,8,14,.55), rgba(5,8,14,.55)), url('{{ url_for('static', filename=s.image_path) }}');"></div>
                         {% else %}
-                            <div class="h-28 bg-gradient-to-br {% if loop.index0 % 3 == 0 %}from-slate-700 via-slate-600 to-slate-800{% elif loop.index0 % 3 == 1 %}from-indigo-700 via-blue-700 to-cyan-700{% else %}from-emerald-700 via-teal-700 to-slate-700{% endif %}"></div>
+                            <div class="h-28 bg-gradient-to-br {% if loop.index0 % 3 == 0 %}from-slate-800 via-slate-700 to-slate-900{% elif loop.index0 % 3 == 1 %}from-cyan-900 via-blue-900 to-slate-900{% else %}from-emerald-900 via-teal-900 to-slate-900{% endif %}"></div>
                         {% endif %}
-                        <div class="space-y-2 p-4">
+                        <div class="space-y-2 border-t border-cyan-500/15 p-4">
                             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ s.code }} · Seccion {{ s.section }}</p>
-                            <h3 class="text-lg font-semibold text-slate-900">{{ s.name }}</h3>
+                            <h3 class="text-lg font-semibold text-slate-100">{{ s.name }}</h3>
                             <div class="flex flex-wrap gap-2">
-                                <a class="rounded-md bg-slate-800 px-3 py-1.5 text-sm text-white hover:bg-slate-700" href="{{ url_for('profesor.materia_detail', subject_id=s.id) }}">Ver alumnos y notas</a>
-                                <form method="post" enctype="multipart/form-data" action="{{ url_for('education.update_subject_image', subject_id=s.id) }}" class="flex items-center gap-2">
-                                    <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp" required class="w-40 rounded-md border border-slate-300 px-2 py-1 text-xs">
-                                    <button type="submit" class="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50">Guardar imagen</button>
+                                <a class="app-btn-primary px-3 py-1.5 text-sm" href="{{ url_for('profesor.materia_detail', subject_id=s.id) }}">Ver alumnos y notas</a>
+                                <form method="post" enctype="multipart/form-data" action="{{ url_for('education.update_subject_image', subject_id=s.id) }}" class="flex flex-wrap items-center gap-2">
+                                    <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp" required class="max-w-[10rem] app-input py-1 text-xs file:mr-1 file:text-xs" />
+                                    <button type="submit" class="app-btn-secondary px-2.5 py-1.5 text-xs">Guardar imagen</button>
                                 </form>
                             </div>
                         </div>
@@ -32,5 +32,5 @@
         {% else %}
             <p class="mt-6 text-slate-500">No tienes materias asignadas.</p>
         {% endif %}
-    </section>
+    {% endcall %}
 {% endblock %}

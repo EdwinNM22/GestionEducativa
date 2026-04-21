@@ -1,42 +1,42 @@
 {% extends "base.html" %}
+{% import "components/ui.html" as ui %}
 
 {% block title %}Materias | Gestion Educativa{% endblock %}
 
 {% block content %}
-    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between gap-3">
-            <h1 class="text-2xl font-bold">Materias</h1>
-            <button type="button" id="openCreateSubjectModal" class="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700">Agregar materia</button>
-        </div>
-    </section>
+    {% call ui.glass_panel("p-6 sm:p-8") %}
+        {% call ui.page_header_row("Materias", "Catalogo y asignaciones", "Academico") %}
+            <button type="button" id="openCreateSubjectModal" class="app-btn-primary shrink-0">Agregar materia</button>
+        {% endcall %}
+    {% endcall %}
 
-    <section class="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 class="text-xl font-semibold">Listado</h2>
+    {% call ui.glass_panel("mt-6 p-6 sm:p-8") %}
+        {{ ui.section_title("Listado", "mb-4 mt-0") }}
         {% if subjects %}
-            <div class="mt-4 overflow-x-auto">
-                <table class="min-w-full text-sm">
-                    <thead class="bg-slate-100 text-slate-700">
+            <div class="mt-4 overflow-x-auto rounded-xl border border-cyan-500/15">
+                <table class="app-data-table">
+                    <thead>
                         <tr>
-                            <th class="px-3 py-2 text-left">ID</th>
-                            <th class="px-3 py-2 text-left">Codigo</th>
-                            <th class="px-3 py-2 text-left">Materia</th>
-                            <th class="px-3 py-2 text-left">Seccion</th>
-                            <th class="px-3 py-2 text-left">Profesor</th>
-                            <th class="px-3 py-2 text-left">Acciones</th>
+                            <th>ID</th>
+                            <th>Código</th>
+                            <th>Materia</th>
+                            <th>Sección</th>
+                            <th>Profesor</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in subjects %}
-                            <tr class="border-b border-slate-200">
-                                <td class="px-3 py-2">{{ item.id }}</td>
-                                <td class="px-3 py-2 font-medium">{{ item.code }}</td>
-                                <td class="px-3 py-2">{{ item.name }}</td>
-                                <td class="px-3 py-2">{{ item.section }}</td>
-                                <td class="px-3 py-2">{{ item.teacher.full_name if item.teacher else "Sin asignar" }}</td>
-                                <td class="px-3 py-2 space-x-2">
-                                    <button type="button" class="open-subject-teachers rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50" data-subject-id="{{ item.id }}">Ver profesores</button>
-                                    <button type="button" class="open-subject-students rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100" data-subject-id="{{ item.id }}">Ver estudiantes</button>
-                                    <button type="button" class="open-subject-image rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100" data-subject-id="{{ item.id }}" data-subject-name="{{ item.name }}">Editar imagen</button>
+                            <tr class="border-b border-cyan-500/10">
+                                <td>{{ item.id }}</td>
+                                <td class="font-medium">{{ item.code }}</td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.section }}</td>
+                                <td>{{ item.teacher.full_name if item.teacher else "Sin asignar" }}</td>
+                                <td class="space-x-2">
+                                    <button type="button" class="open-subject-teachers app-btn-secondary px-3 py-1.5 text-xs" data-subject-id="{{ item.id }}">Ver profesores</button>
+                                    <button type="button" class="open-subject-students app-btn-primary px-3 py-1.5 text-xs" data-subject-id="{{ item.id }}">Ver estudiantes</button>
+                                    <button type="button" class="open-subject-image app-btn-secondary border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs text-emerald-200 hover:bg-emerald-500/20" data-subject-id="{{ item.id }}" data-subject-name="{{ item.name }}">Editar imagen</button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -44,35 +44,32 @@
                 </table>
             </div>
         {% else %}
-            <p class="mt-3 text-slate-500">No hay materias registradas.</p>
+            {{ ui.empty_state("No hay materias registradas.") }}
         {% endif %}
         {% set pagination = subjects_pagination %}
         {% set endpoint = 'education.subjects' %}
         {% include '_pagination.html' %}
-    </section>
+    {% endcall %}
 
-    <div id="createSubjectModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="createSubjectModalTitle">
-        <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
-            <div class="flex items-start justify-between gap-3">
-                <h3 id="createSubjectModalTitle" class="text-lg font-semibold text-slate-900">Agregar materia</h3>
-                <button type="button" id="closeCreateSubjectModal" class="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Cerrar">&times;</button>
-            </div>
+    {% call ui.modal_backdrop("createSubjectModal", "createSubjectModalTitle", 100) %}
+        {% call ui.modal_panel() %}
+            {{ ui.modal_header_close("createSubjectModalTitle", "Agregar materia", "closeCreateSubjectModal") }}
             <form method="post" enctype="multipart/form-data" class="mt-4 grid gap-3">
                 <div>
-                    <label class="text-sm text-slate-600">Nombre</label>
-                    <input name="name" type="text" required class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                    <label class="app-label">Nombre</label>
+                    <input name="name" type="text" required class="app-input mt-1" />
                 </div>
                 <div>
-                    <label class="text-sm text-slate-600">Seccion</label>
-                    <select name="section" required class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                    <label class="app-label">Seccion</label>
+                    <select name="section" required class="app-input mt-1">
                         <option value="A">A</option>
                         <option value="B">B</option>
                         <option value="C">C</option>
                     </select>
                 </div>
                 <div>
-                    <label class="text-sm text-slate-600">Profesor</label>
-                    <select name="teacher_id" class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
+                    <label class="app-label">Profesor</label>
+                    <select name="teacher_id" class="app-input mt-1">
                         <option value="">Sin profesor</option>
                         {% for teacher in teachers %}
                             <option value="{{ teacher.id }}">{{ teacher.full_name }}</option>
@@ -80,44 +77,38 @@
                     </select>
                 </div>
                 <div>
-                    <label class="text-sm text-slate-600">Imagen de portada (opcional)</label>
-                    <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp" class="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                    <label class="app-label">Imagen de portada (opcional)</label>
+                    <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp" class="app-input mt-1 text-sm file:mr-2 file:rounded file:border-0 file:bg-cyan-500/20 file:px-2 file:py-1 file:text-xs file:text-cyan-200" />
                 </div>
                 <div class="mt-2 flex justify-end gap-2">
-                    <button type="button" id="cancelCreateSubjectModal" class="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Cancelar</button>
-                    <button type="submit" class="rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">Guardar</button>
+                    <button type="button" id="cancelCreateSubjectModal" class="app-btn-secondary">Cancelar</button>
+                    <button type="submit" class="app-btn-primary">Guardar</button>
                 </div>
             </form>
-        </div>
-    </div>
+        {% endcall %}
+    {% endcall %}
 
-    <div id="subjectDetailModal" class="fixed inset-0 z-[110] hidden items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="subjectDetailModalTitle">
-        <div class="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
-            <div class="flex items-start justify-between gap-3">
-                <h3 id="subjectDetailModalTitle" class="text-lg font-semibold text-slate-900">Detalle de materia</h3>
-                <button type="button" id="closeSubjectDetailModal" class="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Cerrar">&times;</button>
-            </div>
-            <p id="subjectDetailSubtitle" class="mt-1 text-sm text-slate-600"></p>
+    {% call ui.modal_backdrop("subjectDetailModal", "subjectDetailModalTitle", 110) %}
+        {% call ui.modal_panel("max-w-3xl") %}
+            {{ ui.modal_header_close("subjectDetailModalTitle", "Detalle de materia", "closeSubjectDetailModal") }}
+            <p id="subjectDetailSubtitle" class="app-tech-subtitle mt-1"></p>
             <div id="subjectDetailBody" class="mt-4"></div>
-        </div>
-    </div>
+        {% endcall %}
+    {% endcall %}
 
-    <div id="subjectImageModal" class="fixed inset-0 z-[120] hidden items-center justify-center bg-slate-950/50 p-4" role="dialog" aria-modal="true" aria-labelledby="subjectImageModalTitle">
-        <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-2xl">
-            <div class="flex items-start justify-between gap-3">
-                <h3 id="subjectImageModalTitle" class="text-lg font-semibold text-slate-900">Editar imagen de materia</h3>
-                <button type="button" id="closeSubjectImageModal" class="rounded p-1 text-slate-500 hover:bg-slate-100 hover:text-slate-800" aria-label="Cerrar">&times;</button>
-            </div>
-            <p id="subjectImageSubtitle" class="mt-1 text-sm text-slate-600"></p>
+    {% call ui.modal_backdrop("subjectImageModal", "subjectImageModalTitle", 120) %}
+        {% call ui.modal_panel() %}
+            {{ ui.modal_header_close("subjectImageModalTitle", "Editar imagen de materia", "closeSubjectImageModal") }}
+            <p id="subjectImageSubtitle" class="app-tech-subtitle mt-1"></p>
             <form id="subjectImageForm" method="post" enctype="multipart/form-data" class="mt-4 grid gap-3">
-                <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp" required class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm">
+                <input type="file" name="image" accept=".png,.jpg,.jpeg,.webp" required class="app-input text-sm file:mr-2 file:rounded file:border-0 file:bg-cyan-500/20 file:px-2 file:py-1 file:text-xs file:text-cyan-200" />
                 <div class="flex justify-end gap-2">
-                    <button type="button" id="cancelSubjectImageModal" class="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">Cancelar</button>
-                    <button type="submit" class="rounded-md bg-slate-800 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700">Guardar</button>
+                    <button type="button" id="cancelSubjectImageModal" class="app-btn-secondary">Cancelar</button>
+                    <button type="submit" class="app-btn-primary">Guardar</button>
                 </div>
             </form>
-        </div>
-    </div>
+        {% endcall %}
+    {% endcall %}
 
     <script>
         const createSubjectModal = document.getElementById("createSubjectModal");
@@ -147,7 +138,7 @@
                 const url = "{{ url_for('education.subject_teachers', subject_id=0) }}".replace("/0", "/" + encodeURIComponent(btn.dataset.subjectId));
                 const response = await fetch(url);
                 if (!response.ok) {
-                    subjectDetailBody.innerHTML = "<p class=\"text-sm text-rose-600\">No se pudo cargar la informacion.</p>";
+                    subjectDetailBody.innerHTML = "<p class=\"text-sm text-rose-400\">No se pudo cargar la informacion.</p>";
                     return;
                 }
                 const payload = await response.json();
@@ -159,9 +150,9 @@
                 }
                 let body = "";
                 rows.forEach((t) => {
-                    body += "<tr class=\"border-b border-slate-200\"><td class=\"px-3 py-2\">" + escHtml(t.full_name) + "</td><td class=\"px-3 py-2\">" + escHtml(t.email) + "</td></tr>";
+                    body += "<tr class=\"border-b border-cyan-500/10\"><td>" + escHtml(t.full_name) + "</td><td>" + escHtml(t.email) + "</td></tr>";
                 });
-                subjectDetailBody.innerHTML = "<div class=\"overflow-x-auto\"><table class=\"min-w-full text-sm\"><thead class=\"bg-slate-100 text-slate-700\"><tr><th class=\"px-3 py-2 text-left\">Profesor</th><th class=\"px-3 py-2 text-left\">Correo</th></tr></thead><tbody>" + body + "</tbody></table></div>";
+                subjectDetailBody.innerHTML = "<div class=\"overflow-x-auto rounded-xl border border-cyan-500/15\"><table class=\"app-data-table\"><thead><tr><th>Profesor</th><th>Correo</th></tr></thead><tbody>" + body + "</tbody></table></div>";
             });
         });
         document.querySelectorAll(".open-subject-students").forEach((btn) => {
@@ -172,7 +163,7 @@
                 const url = "{{ url_for('education.subject_students', subject_id=0) }}".replace("/0", "/" + encodeURIComponent(btn.dataset.subjectId));
                 const response = await fetch(url);
                 if (!response.ok) {
-                    subjectDetailBody.innerHTML = "<p class=\"text-sm text-rose-600\">No se pudo cargar la informacion.</p>";
+                    subjectDetailBody.innerHTML = "<p class=\"text-sm text-rose-400\">No se pudo cargar la informacion.</p>";
                     return;
                 }
                 const payload = await response.json();
@@ -184,9 +175,9 @@
                 }
                 let body = "";
                 rows.forEach((s) => {
-                    body += "<tr class=\"border-b border-slate-200\"><td class=\"px-3 py-2\">" + escHtml(s.full_name) + "</td><td class=\"px-3 py-2\">" + escHtml(s.email) + "</td></tr>";
+                    body += "<tr class=\"border-b border-cyan-500/10\"><td>" + escHtml(s.full_name) + "</td><td>" + escHtml(s.email) + "</td></tr>";
                 });
-                subjectDetailBody.innerHTML = "<div class=\"overflow-x-auto\"><table class=\"min-w-full text-sm\"><thead class=\"bg-slate-100 text-slate-700\"><tr><th class=\"px-3 py-2 text-left\">Estudiante</th><th class=\"px-3 py-2 text-left\">Correo</th></tr></thead><tbody>" + body + "</tbody></table></div>";
+                subjectDetailBody.innerHTML = "<div class=\"overflow-x-auto rounded-xl border border-cyan-500/15\"><table class=\"app-data-table\"><thead><tr><th>Estudiante</th><th>Correo</th></tr></thead><tbody>" + body + "</tbody></table></div>";
             });
         });
         document.getElementById("closeSubjectDetailModal").addEventListener("click", () => closeModal(subjectDetailModal));

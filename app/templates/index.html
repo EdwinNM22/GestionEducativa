@@ -1,8 +1,11 @@
 {% extends "base.html" %}
+{% import "components/ui.html" as ui %}
 
 {% block title %}Inicio | Gestion Educativa{% endblock %}
 
 {% block content %}
-    <h1>Bienvenido</h1>
-    <p>Este es el proyecto base.</p>
+    {% call ui.glass_panel("p-8") %}
+        {{ ui.page_header_simple("Bienvenido", "Gestion Educativa · panel de inicio") }}
+        <p class="text-slate-400">Este es el proyecto base. Usa el menu para navegar.</p>
+    {% endcall %}
 {% endblock %}

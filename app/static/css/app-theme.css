@@ -1,0 +1,332 @@
+/* Tema "education intelligence" — ancho completo, sin contenedor centrado estrecho */
+
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+    /* Fondo global: cambia solo esta variable (URL) para toda la app */
+    --app-bg-image: url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format");
+    --app-bg: #0a0c10;
+    --app-cyan: #00d4ff;
+    --app-cyan-dim: rgba(0, 212, 255, 0.2);
+    --app-cyan-glow: rgba(0, 212, 255, 0.35);
+    --app-text: #e0e4f0;
+    --app-text-muted: #8a94b8;
+    --app-glass: rgba(12, 18, 28, 0.65);
+    --app-green: #00e676;
+    --app-red: #ff5e5e;
+}
+
+body.app-theme {
+    font-family: "Inter", system-ui, sans-serif;
+    background: var(--app-bg);
+    color: var(--app-text);
+    position: relative;
+}
+
+body.app-theme::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: var(--app-bg-image);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: brightness(0.22) contrast(1.15) blur(2px);
+    z-index: -2;
+}
+
+body.app-theme::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            rgba(0, 255, 255, 0.028) 0px,
+            rgba(0, 255, 255, 0.028) 2px,
+            transparent 2px,
+            transparent 8px
+        ),
+        radial-gradient(circle at 20% 30%, rgba(0, 100, 255, 0.07) 0%, transparent 55%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Superficies */
+.app-glass-panel {
+    background: var(--app-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 180, 255, 0.22);
+    border-radius: 20px;
+}
+
+.app-glass-inner {
+    background: rgba(8, 12, 20, 0.55);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 180, 255, 0.18);
+    border-radius: 16px;
+}
+
+/* Tipografía de página */
+.app-tech-title {
+    font-size: 1.75rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #ffffff 0%, var(--app-cyan) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.app-tech-subtitle {
+    font-size: 0.8125rem;
+    color: var(--app-text-muted);
+    font-family: "Fira Code", ui-monospace, monospace;
+}
+
+.app-tech-kicker {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--app-text-muted);
+}
+
+/* Stats KPI */
+.app-stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #7e8aa8;
+    margin-bottom: 0.5rem;
+}
+
+.app-stat-value {
+    font-size: 2.25rem;
+    font-weight: 600;
+    color: #fff;
+    font-family: "Fira Code", ui-monospace, monospace;
+    line-height: 1.1;
+}
+
+/* Tablas */
+.app-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8125rem;
+}
+
+.app-data-table th {
+    text-align: left;
+    padding: 0.875rem 1.25rem;
+    background: rgba(0, 30, 50, 0.45);
+    color: var(--app-cyan);
+    font-weight: 600;
+    font-family: inherit;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.28);
+}
+
+.app-data-table td {
+    padding: 0.75rem 1.25rem;
+    color: var(--app-text);
+    border-bottom: 1px solid rgba(30, 40, 60, 0.65);
+}
+
+.app-data-table tbody tr:hover td {
+    background: rgba(0, 212, 255, 0.05);
+}
+
+.app-grade-pass {
+    color: var(--app-green);
+    font-weight: 500;
+}
+
+.app-grade-fail {
+    color: var(--app-red);
+}
+
+/* Badges */
+.app-badge-cyan {
+    display: inline-block;
+    background: rgba(0, 212, 255, 0.15);
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    color: var(--app-cyan);
+    border: 1px solid rgba(0, 212, 255, 0.35);
+}
+
+.app-status-pass {
+    display: inline-block;
+    border-radius: 0.25rem;
+    background: rgba(0, 230, 118, 0.12);
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--app-green);
+}
+
+.app-status-fail {
+    display: inline-block;
+    border-radius: 0.25rem;
+    background: rgba(255, 94, 94, 0.12);
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #fca5a5;
+}
+
+/* Chart card header */
+.app-chart-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.app-chart-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #ccd6f0;
+    font-family: "Fira Code", ui-monospace, monospace;
+}
+
+/* Modal overlay */
+.app-modal-backdrop {
+    background: rgba(5, 8, 14, 0.72);
+    backdrop-filter: blur(4px);
+}
+
+.app-modal-panel {
+    background: rgba(12, 18, 28, 0.92);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 212, 255, 0.28);
+    border-radius: 16px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+}
+
+.app-modal-close {
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+    line-height: 1;
+    font-size: 1.25rem;
+    color: #94a3b8;
+}
+
+.app-modal-close:hover {
+    background: rgba(0, 212, 255, 0.1);
+    color: #e0e4f0;
+}
+
+/* Tarjetas de curso (alumno / profesor) */
+.app-course-card {
+    overflow: hidden;
+    border-radius: 1rem;
+    border: 1px solid rgba(0, 180, 255, 0.2);
+    background: rgba(8, 12, 20, 0.55);
+    backdrop-filter: blur(8px);
+}
+
+.app-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 0.375rem;
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    background: rgba(5, 10, 18, 0.45);
+    padding: 0.5rem 0.75rem;
+}
+
+/* Form controls (modales / admin) */
+.app-input {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    background: rgba(5, 10, 18, 0.6);
+    color: var(--app-text);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.app-input:focus {
+    outline: none;
+    border-color: rgba(0, 212, 255, 0.55);
+    box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.15);
+}
+
+.app-input::placeholder {
+    color: #5a6688;
+}
+
+.app-label {
+    font-size: 0.875rem;
+    color: var(--app-text-muted);
+}
+
+.app-btn-primary {
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #fff;
+    border: 1px solid rgba(0, 212, 255, 0.35);
+}
+
+.app-btn-primary:hover {
+    filter: brightness(1.08);
+}
+
+.app-btn-secondary {
+    border-radius: 0.5rem;
+    border: 1px solid rgba(0, 212, 255, 0.28);
+    background: rgba(0, 212, 255, 0.08);
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: #ccd6f0;
+}
+
+.app-btn-secondary:hover {
+    background: rgba(0, 212, 255, 0.14);
+    border-color: rgba(0, 212, 255, 0.45);
+}
+
+.app-btn-danger {
+    border-radius: 0.375rem;
+    border: 1px solid rgba(251, 113, 133, 0.45);
+    background: rgba(190, 18, 60, 0.2);
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #fecdd3;
+}
+
+.app-btn-danger:hover {
+    background: rgba(190, 18, 60, 0.35);
+}
+
+.app-btn-ghost {
+    border-radius: 0.375rem;
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    background: transparent;
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    color: #ccd6f0;
+}
+
+.app-btn-ghost:hover {
+    background: rgba(0, 212, 255, 0.1);
+}
+
+.app-alert-error {
+    border-radius: 0.375rem;
+    border: 1px solid rgba(251, 113, 133, 0.45);
+    background: rgba(127, 29, 29, 0.35);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    color: #fecdd3;
+}

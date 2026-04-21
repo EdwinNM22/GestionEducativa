@@ -1,34 +1,34 @@
 {% extends "base.html" %}
+{% import "components/ui.html" as ui %}
 {% block title %}Mi panel | Gestion Educativa{% endblock %}
 {% block content %}
-    <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 class="text-2xl font-bold">Mis materias y notas</h1>
-        <p class="mt-1 text-slate-600">Hola, {{ g.user.username }}.</p>
+    {% call ui.glass_panel("p-6 sm:p-8") %}
+        {{ ui.page_header_simple("Mis materias y notas", "Hola, " ~ g.user.username) }}
         {% if not g.user.student_id %}
-            <p class="mt-4 text-rose-700">Tu cuenta aun no esta vinculada a un estudiante. Pide al administrador que asocie tu usuario.</p>
+            {{ ui.alert_danger("Tu cuenta aun no esta vinculada a un estudiante. Pide al administrador que asocie tu usuario.") }}
         {% elif enrollments %}
             <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {% for row in enrollments %}
-                    <article class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                    <article class="app-course-card">
                         {% if row.subject.image_path %}
-                            <div class="h-28 bg-cover bg-center" style="background-image: linear-gradient(rgba(15,23,42,.35), rgba(15,23,42,.35)), url('{{ url_for('static', filename=row.subject.image_path) }}');"></div>
+                            <div class="h-28 bg-cover bg-center" style="background-image: linear-gradient(rgba(5,8,14,.55), rgba(5,8,14,.55)), url('{{ url_for('static', filename=row.subject.image_path) }}');"></div>
                         {% else %}
-                            <div class="h-28 bg-gradient-to-br {% if loop.index0 % 3 == 0 %}from-slate-700 via-slate-600 to-slate-800{% elif loop.index0 % 3 == 1 %}from-indigo-700 via-blue-700 to-cyan-700{% else %}from-emerald-700 via-teal-700 to-slate-700{% endif %}"></div>
+                            <div class="h-28 bg-gradient-to-br {% if loop.index0 % 3 == 0 %}from-slate-800 via-slate-700 to-slate-900{% elif loop.index0 % 3 == 1 %}from-cyan-900 via-blue-900 to-slate-900{% else %}from-emerald-900 via-teal-900 to-slate-900{% endif %}"></div>
                         {% endif %}
-                        <div class="space-y-2 p-4">
+                        <div class="space-y-2 border-t border-cyan-500/15 p-4">
                             <p class="text-xs font-medium uppercase tracking-wide text-slate-500">{{ row.subject.code }} · Seccion {{ row.subject.section }}</p>
-                            <h3 class="text-lg font-semibold text-slate-900">{{ row.subject.name }}</h3>
-                            <div class="grid grid-cols-2 gap-2 text-sm text-slate-700">
-                                <p><span class="font-medium">Lab 1:</span> {{ row.lab1 }}</p>
-                                <p><span class="font-medium">Lab 2:</span> {{ row.lab2 }}</p>
-                                <p><span class="font-medium">Parcial:</span> {{ row.partial }}</p>
-                                <p><span class="font-medium">Nota final:</span> {{ row.final_grade }}</p>
+                            <h3 class="text-lg font-semibold text-slate-100">{{ row.subject.name }}</h3>
+                            <div class="grid grid-cols-2 gap-2 text-sm text-slate-300">
+                                <p><span class="font-medium text-slate-400">Lab 1:</span> {{ row.lab1 }}</p>
+                                <p><span class="font-medium text-slate-400">Lab 2:</span> {{ row.lab2 }}</p>
+                                <p><span class="font-medium text-slate-400">Parcial:</span> {{ row.partial }}</p>
+                                <p><span class="font-medium text-slate-400">Nota final:</span> {{ row.final_grade }}</p>
                             </div>
                             <div>
                                 {% if row.final_grade >= passing_grade %}
-                                    <span class="rounded bg-emerald-100 px-2 py-0.5 text-emerald-800">Aprobado</span>
+                                    {{ ui.badge_pass() }}
                                 {% else %}
-                                    <span class="rounded bg-rose-100 px-2 py-0.5 text-rose-800">Reprobado</span>
+                                    {{ ui.badge_fail() }}
                                 {% endif %}
                             </div>
                         </div>
@@ -43,5 +43,5 @@
             {% set endpoint = 'alumno.panel' %}
             {% include '_pagination.html' %}
         {% endif %}
-    </section>
+    {% endcall %}
 {% endblock %}
