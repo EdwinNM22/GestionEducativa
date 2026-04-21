@@ -3,7 +3,6 @@ import os
 import click
 from flask import Flask, g, session
 from dotenv import load_dotenv
-from flask_migrate import upgrade
 
 from .extensions import db, migrate
 from .models import ROLE_ADMIN, User
@@ -26,9 +25,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     with app.app_context():
-        # Aplica cambios de esquema pendientes al arrancar.
-        upgrade()
-        # Crea tablas faltantes si aun no existen.
+        from . import models as _models  # noqa: F401 — registra tablas en metadata
         db.create_all()
 
     @app.before_request
@@ -38,8 +35,9 @@ def create_app():
 
     @app.cli.command("init-db")
     def init_db():
+        from . import models as _models  # noqa: F401
         db.create_all()
-        print("Base de datos inicializada.")
+        print("Tablas creadas (solo las que faltaban).")
 
     from .routes import main_bp
     from .auth import auth_bp

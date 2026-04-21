@@ -3,7 +3,7 @@ from functools import wraps
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
 from .extensions import db
-from .models import ROLE_ADMIN, ROLE_STUDENT, ROLE_TEACHER, ROLES, User
+from .models import ROLE_ADMIN, ROLE_STUDENT, ROLE_TEACHER, User
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -46,8 +46,35 @@ def home_url_for_user(user: User):
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
-    flash("El alta de usuarios la gestiona un administrador.", "error")
-    return redirect(url_for("auth.login"))
+    if request.method == "POST":
+        username = (request.form.get("username") or "").strip()
+        email = (request.form.get("email") or "").strip().lower()
+        password = request.form.get("password") or ""
+
+        if not username or not email or not password:
+            flash("Completa usuario, correo y contrasena.", "error")
+            return render_template("register.html")
+
+        if User.query.filter_by(username=username).first():
+            flash("Ese nombre de usuario ya esta en uso.", "error")
+            return render_template("register.html")
+
+        if User.query.filter_by(email=email).first():
+            flash("Ese correo ya esta registrado.", "error")
+            return render_template("register.html")
+
+        user = User(
+            username=username,
+            email=email,
+            role=ROLE_STUDENT,
+        )
+        user.set_password(password)
+        db.session.add(user)
+        db.session.commit()
+        flash("Cuenta creada. Ya puedes iniciar sesion.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("register.html")
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])

@@ -17,5 +17,9 @@
             </div>
             <button type="submit" class="app-btn-primary w-full py-2.5">Entrar</button>
         </form>
+        <p class="mt-5 text-center text-sm text-slate-400/90">
+            ¿No tienes cuenta?
+            <a href="{{ url_for('auth.register') }}" class="text-cyan-400/90 hover:text-cyan-300 hover:underline">Registrarse</a>
+        </p>
     {% endcall %}
 {% endblock %}
