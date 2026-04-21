@@ -110,7 +110,7 @@ def _analytics_payload_from_df(df: pd.DataFrame) -> dict:
                 "labels": ["Lab 1", "Lab 2", "Parcial"],
                 "values": [0.0, 0.0, 0.0],
             },
-            "top_students": {"labels": [], "values": []},
+            "grade_count_by_value": {"labels": [], "values": []},
             "passing_by_teacher": {
                 "labels": ranking_empty["teacher_name"].tolist(),
                 "values": [int(v) for v in ranking_empty["estudiantes_aprobados"].tolist()],
@@ -126,19 +126,16 @@ def _analytics_payload_from_df(df: pd.DataFrame) -> dict:
 
     avg_components_series = df[["lab1", "lab2", "partial"]].mean()
 
-    top_students = (
-        df.groupby("student_name", as_index=False)["final_grade"]
-        .mean()
-        .sort_values("final_grade", ascending=False)
-        .head(5)
-    )
+    grade_values = list(range(10, -1, -1))
+    rounded_final = df["final_grade"].round().clip(0, 10).astype(int)
+    grade_counts = rounded_final.value_counts().reindex(grade_values, fill_value=0)
 
     passing_by_teacher = _ranking_alumnos_aprobados_por_profesor(df)
 
-    dist_labels = ["0-4", "4-7", "7-10"]
+    dist_labels = ["0-3", "4-5", "6-7", "8-10"]
     categorized = pd.cut(
         df["final_grade"],
-        bins=[-0.01, 4.0, 7.0, 10.01],
+        bins=[-0.01, 3.0, 5.0, 7.0, 10.01],
         labels=dist_labels,
     )
     dist_counts = categorized.value_counts().reindex(dist_labels, fill_value=0)
@@ -156,9 +153,9 @@ def _analytics_payload_from_df(df: pd.DataFrame) -> dict:
                 round(avg_components_series["partial"], 2),
             ],
         },
-        "top_students": {
-            "labels": top_students["student_name"].tolist(),
-            "values": [round(v, 2) for v in top_students["final_grade"].tolist()],
+        "grade_count_by_value": {
+            "labels": [str(v) for v in grade_values],
+            "values": [int(v) for v in grade_counts.tolist()],
         },
         "passing_by_teacher": {
             "labels": passing_by_teacher["teacher_name"].tolist(),
@@ -242,16 +239,15 @@ def export_analytics():
     if chart == "students":
         if df.empty:
             return jsonify({"error": "No hay datos para generar el grafico."}), 400
-        data = (
-            df.groupby("student_name", as_index=False)["final_grade"]
-            .mean()
-            .sort_values("final_grade", ascending=False)
-            .head(10)
+        grades = list(range(10, -1, -1))
+        counts = (
+            df["final_grade"].round().clip(0, 10).astype(int).value_counts().reindex(grades, fill_value=0)
         )
-        sns.barplot(data=data, x="final_grade", y="student_name", ax=ax, palette="Blues_d")
-        ax.set_title("Top estudiantes por promedio final")
-        ax.set_xlabel("Promedio final")
-        ax.set_ylabel("Estudiante")
+        data = pd.DataFrame({"nota": [str(v) for v in grades], "n": counts.astype(int).to_numpy()})
+        sns.barplot(data=data, x="nota", y="n", ax=ax, palette="Blues_d")
+        ax.set_title("Cantidad de registros por nota final (10 a 0)")
+        ax.set_xlabel("Nota final (redondeada)")
+        ax.set_ylabel("Cantidad de registros")
     elif chart == "teachers":
         if df.empty:
             return jsonify({"error": "No hay datos para generar el grafico."}), 400
@@ -268,10 +264,10 @@ def export_analytics():
     elif chart == "distribution":
         if df.empty:
             return jsonify({"error": "No hay datos para generar el grafico."}), 400
-        dist_labels = ["0-4", "4-7", "7-10"]
+        dist_labels = ["0-3", "4-5", "6-7", "8-10"]
         categorized = pd.cut(
             df["final_grade"],
-            bins=[-0.01, 4.0, 7.0, 10.01],
+            bins=[-0.01, 3.0, 5.0, 7.0, 10.01],
             labels=dist_labels,
         )
         vc = categorized.value_counts().reindex(dist_labels, fill_value=0)
