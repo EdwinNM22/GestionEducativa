@@ -2,7 +2,7 @@ from flask import Blueprint, abort, flash, g, redirect, render_template, request
 
 from .auth import login_required, role_required
 from .extensions import db
-from .grading import parse_grade
+from .grading import PASSING_GRADE, parse_grade
 from .models import ROLE_TEACHER, Enrollment, Subject
 
 profesor_bp = Blueprint("profesor", __name__, url_prefix="/profesor")
@@ -71,4 +71,5 @@ def materia_detail(subject_id):
         "profesor/materia.html",
         subject=subject,
         enrollments=enrollments,
+        passing_grade=PASSING_GRADE,
     )
